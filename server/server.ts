@@ -1,5 +1,7 @@
 export default interface Server {
-  setOptions(options: any): void;
+  setOptions(options: any): void
 
-  start(): void;
+  start(callback?: Function): void
+
+  register(o: Object): void
 }
