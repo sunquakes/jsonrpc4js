@@ -3,5 +3,7 @@ export default interface Server {
 
   start(callback?: Function): void
 
-  register(o: Object): void
+  register(o: object): void
+
+  handler(message: {}): string
 }
