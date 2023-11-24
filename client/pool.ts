@@ -27,12 +27,18 @@ export default class Pool {
    */
   private conns: Array<net.Socket>
 
+  private resolves: Array<Function>
+
   private option: Option
 
   constructor(address: string, option: Option) {
     this.address = address
     this.option = option
     this.activeTotal = this.setActiveAddresses()
+    this.conns = []
+    this.resolves = []
+    this.activeAddresses = []
+    this.setConns()
   }
 
   private setActiveAddresses(): number {
@@ -43,7 +49,9 @@ export default class Pool {
 
   private setConns() {
     for (let i = 0; i < this.option.minIdle; i++) {
-
+      const conn = this.createConn()
+      this.conns.push(conn)
+      this.activeTotal++
     }
   }
 
@@ -61,5 +69,34 @@ export default class Pool {
       socket.on('close', () => {})
       socket.on('data', (data) => {})
     })
+    return socket
+  }
+
+  public borrow(): Promise<net.Socket> {
+    if (this.activeTotal <= 0) {
+      throw new Error('Unable to connect to the server.')
+    }
+    if (this.activeTotal > this.option.maxIdle) {
+      return new Promise((resolve) => {
+        const conn = this.conns.shift()
+        if (conn !== undefined) {
+          resolve(conn)
+        } else {
+          this.resolves.push(resolve)
+        }
+      })
+    }
+    const conn = this.createConn()
+    this.activeTotal++
+    return new Promise(() => conn)
+  }
+
+  public release(conn: net.Socket): void {
+    const resolve = this.resolves.shift()
+    if (resolve !== undefined) {
+      resolve(conn)
+    } else {
+      this.conns.push(conn)
+    }
   }
 }
