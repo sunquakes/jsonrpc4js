@@ -9,6 +9,15 @@ export default class Tcp implements Server {
   private map = new Map<string, object>()
 
   /**
+   * The server port.
+   */
+  private port: number
+
+  constructor(port: number) {
+    this.port = port
+  }
+
+  /**
    * Set tcp options.
    */
   setOptions(options: any): void {}
@@ -17,8 +26,6 @@ export default class Tcp implements Server {
    * Start the tcp server.
    */
   start(callback?: Function): void {
-    const port = 8080
-
     var server = net.createServer((socket) => {
       socket.on('close', () => {})
 
@@ -29,8 +36,8 @@ export default class Tcp implements Server {
       socket.on('end', function () {})
     })
 
-    server.listen(8080, () => {
-      console.info(`Listening tcp://0.0.0.0:${port}`)
+    server.listen(this.port, () => {
+      console.info(`Listening tcp://0.0.0.0:${this.port}`)
       if (callback) callback(server)
     })
   }

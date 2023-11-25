@@ -13,9 +13,14 @@ export default class Pool {
   private address: string
 
   /**
+   * The response handler.
+   */
+  private handler: Function
+
+  /**
    * Active service address.
    */
-  private activeAddresses: Array<string>
+  private activeAddresses: Array<string> = []
 
   /**
    * The number of active service address.
@@ -25,37 +30,52 @@ export default class Pool {
   /**
    * The service connections.
    */
-  private conns: Array<net.Socket>
+  private conns: Array<net.Socket> = []
 
-  private resolves: Array<Function>
+  /**
+   * The resolve queue that connection.
+   */
+  private resolves: Array<Function> = []
 
+  /**
+   * The tcp connection option.
+   */
   private option: Option
 
-  constructor(address: string, option: Option) {
+  constructor(address: string, handler: Function, option?: Option) {
     this.address = address
-    this.option = option
+    this.handler = handler
+    this.option = option || { minIdle: 1, maxIdle: 10 }
     this.activeTotal = this.setActiveAddresses()
-    this.conns = []
-    this.resolves = []
-    this.activeAddresses = []
     this.setConns()
   }
 
+  /**
+   * Set the pool active addresses.
+   * @returns
+   */
   private setActiveAddresses(): number {
     const addresses = this.address.split(',')
     this.activeAddresses = addresses
     return this.activeAddresses.length
   }
 
-  private setConns() {
+  /**
+   * Set the pool connections.
+   */
+  private async setConns() {
     for (let i = 0; i < this.option.minIdle; i++) {
-      const conn = this.createConn()
+      const conn = await this.createConn()
       this.conns.push(conn)
       this.activeTotal++
     }
   }
 
-  private createConn() {
+  /**
+   * Create a tcp connection.
+   * @returns
+   */
+  private createConn(): Promise<net.Socket> {
     const size = this.activeAddresses.length
     if (size == 0) {
       this.setActiveAddresses()
@@ -65,16 +85,37 @@ export default class Pool {
     const socket = new net.Socket()
     const addressObj = splitAddress(address)
 
-    socket.connect(addressObj.port, addressObj.host, () => {
-      socket.on('close', () => {})
-      socket.on('data', (data) => {})
+    return new Promise((resolve, reject) => {
+          console.info('123', addressObj)
+      socket.connect(addressObj.port, addressObj.host, () => {
+        socket.on('connect', () => {
+          resolve(socket)
+        })
+        socket.on('close', () => {})
+        socket.on('data', (data) => {
+          this.handler(JSON.parse(data.toString()))
+        })
+        socket.on('error', (error) => {
+          console.error('error', error)
+          delete this.activeAddresses[key]
+          reject(error)
+        })
+        socket.on('timeout', () => {
+          console.info('123456', addressObj)
+          delete this.activeAddresses[key]
+          reject(new Error('Connection timeout.'))
+        })
+      })
     })
-    return socket
   }
 
+  /**
+   * Borrow a tcp connection from pool.
+   * @returns
+   */
   public borrow(): Promise<net.Socket> {
     if (this.activeTotal <= 0) {
-      throw new Error('Unable to connect to the server.')
+      return Promise.reject(new Error('Unable to connect to the server.'))
     }
     if (this.activeTotal > this.option.maxIdle) {
       return new Promise((resolve) => {
@@ -86,11 +127,14 @@ export default class Pool {
         }
       })
     }
-    const conn = this.createConn()
     this.activeTotal++
-    return new Promise(() => conn)
+    return this.createConn()
   }
 
+  /**
+   * Release a tcp connection to the pool.
+   * @param conn
+   */
   public release(conn: net.Socket): void {
     const resolve = this.resolves.shift()
     if (resolve !== undefined) {
