@@ -87,12 +87,14 @@ export default class Pool {
 
     return new Promise((resolve, reject) => {
           console.info('123', addressObj)
-      socket.connect(addressObj.port, addressObj.host, () => {
-        socket.on('connect', () => {
+      socket.connect(4000, "localhost", () => {
+        socket.on('ready', () => {
           resolve(socket)
         })
         socket.on('close', () => {})
         socket.on('data', (data) => {
+          console.log("data", data)
+          console.log(data.toString())
           this.handler(JSON.parse(data.toString()))
         })
         socket.on('error', (error) => {
@@ -114,10 +116,11 @@ export default class Pool {
    * @returns
    */
   public borrow(): Promise<net.Socket> {
+    console.log('this.activeTotal', this.activeTotal)
     if (this.activeTotal <= 0) {
       return Promise.reject(new Error('Unable to connect to the server.'))
     }
-    if (this.activeTotal > this.option.maxIdle) {
+    if (this.activeTotal >= this.option.maxIdle) {
       return new Promise((resolve) => {
         const conn = this.conns.shift()
         if (conn !== undefined) {

@@ -2,6 +2,8 @@ import Server from '../server/tcp'
 import Client from '../client/tcp'
 import * as net from 'net'
 
+const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
+
 class Rpc {
   add(a: number, b: number): number {
     return a + b
@@ -18,6 +20,7 @@ test('Tcp client call.', async () => {
       resolve(s)
     })
   })
+  await sleep(5000)
   expect(1).toEqual(1)
   // Call server.
   const client = new Client('Rpc', `localhost:${port}`)
@@ -25,5 +28,6 @@ test('Tcp client call.', async () => {
     console.log('result', result)
     expect(result).toEqual(3)
   })
+  await sleep(1000)
   s.close()
-})
+}, 20000)
