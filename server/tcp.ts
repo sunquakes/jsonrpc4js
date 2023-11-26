@@ -1,6 +1,7 @@
 import * as net from 'net'
 import Server from './server'
 import handler from './handler'
+import Request from '../type/request'
 
 export default class Tcp implements Server {
   /**
@@ -55,7 +56,7 @@ export default class Tcp implements Server {
   /**
    * Hander the client message.
    */
-  handler(message: {}): string {
+  handler(message: Request): string {
     const res = handler(message, this.map)
     return res
   }

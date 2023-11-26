@@ -1,3 +1,5 @@
+import Request from "../type/request"
+
 export default interface Server {
   setOptions(options: any): void
 
@@ -5,5 +7,5 @@ export default interface Server {
 
   register(o: object): void
 
-  handler(message: {}): string
+  handler(message: Request): string
 }

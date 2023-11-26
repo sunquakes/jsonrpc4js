@@ -1,4 +1,5 @@
 import Request from '../type/request'
+import { newResult } from '../type/response'
 
 export default function handler(message: Request, map: Map<string, object>): string {
   const methodArray = message.method.split('/')
@@ -9,7 +10,7 @@ export default function handler(message: Request, map: Map<string, object>): str
     const method: Function = (service as any)[methodName]
     if (method !== undefined) {
       const res = method(...message.params)
-      return JSON.stringify(res)
+      return JSON.stringify(newResult(message.id, res))
     }
   }
   return JSON.stringify(message)

@@ -1,5 +1,6 @@
 import * as net from 'net'
 import { splitAddress } from '../utils/address'
+import Client from './client'
 
 type Option = {
   minIdle: number
@@ -13,9 +14,9 @@ export default class Pool {
   private address: string
 
   /**
-   * The response handler.
+   * The client.
    */
-  private handler: Function
+  private client: Client
 
   /**
    * Active service address.
@@ -42,9 +43,9 @@ export default class Pool {
    */
   private option: Option
 
-  constructor(address: string, handler: Function, option?: Option) {
+  constructor(address: string, client: Client, option?: Option) {
     this.address = address
-    this.handler = handler
+    this.client = client
     this.option = option || { minIdle: 1, maxIdle: 10 }
     this.activeTotal = this.setActiveAddresses()
     this.setConns()
@@ -86,16 +87,16 @@ export default class Pool {
     const addressObj = splitAddress(address)
 
     return new Promise((resolve, reject) => {
-          console.info('123', addressObj)
-      socket.connect(4000, "localhost", () => {
+      console.info('123', addressObj)
+      socket.connect(4000, 'localhost', () => {
         socket.on('ready', () => {
           resolve(socket)
         })
         socket.on('close', () => {})
         socket.on('data', (data) => {
-          console.log("data", data)
+          console.log('data', data)
           console.log(data.toString())
-          this.handler(JSON.parse(data.toString()))
+          this.client.handler(JSON.parse(data.toString()))
         })
         socket.on('error', (error) => {
           console.error('error', error)
