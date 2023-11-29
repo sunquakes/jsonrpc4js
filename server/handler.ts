@@ -1,5 +1,5 @@
 import Request from '../type/request'
-import { newResult } from '../type/response'
+import { newResult, newError } from '../type/response'
 
 export default function handler(message: Request, map: Map<string, object>): string {
   const methodArray = message.method.split('/')
@@ -12,6 +12,8 @@ export default function handler(message: Request, map: Map<string, object>): str
       const res = method(...message.params)
       return JSON.stringify(newResult(message.id, res))
     }
+  } else {
+    return JSON.stringify(newError(message.id, res))
   }
   return JSON.stringify(message)
 }
