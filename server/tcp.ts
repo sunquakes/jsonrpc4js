@@ -1,33 +1,60 @@
-import * as Net from 'net'
+import * as net from 'net'
 import Server from './server'
+import handler from './handler'
+import Request from '../type/request'
+
 export default class Tcp implements Server {
+  /**
+   * The method map.
+   */
+  private map = new Map<string, object>()
+
+  /**
+   * The server port.
+   */
+  private port: number
+
+  constructor(port: number) {
+    this.port = port
+  }
+
+  /**
+   * Set tcp options.
+   */
   setOptions(options: any): void {}
 
-  start(): void {
-    const port = 8080
+  /**
+   * Start the tcp server.
+   */
+  start(callback?: Function): void {
+    var server = net.createServer((socket) => {
+      socket.on('close', () => {})
 
-    const server = new Net.Server()
-
-    server.listen(port, function () {
-      console.log(`Server listening for connection requests on socket localhost:${port}`)
+      socket.on('data', (data) => {
+        const res = handler(JSON.parse(data.toString()), this.map)
+        socket.write(res)
+      })
+      socket.on('end', function () {})
     })
 
-    server.on('connection', function (socket) {
-      console.log('A new connection has been established.')
-
-      socket.write('Hello, client.')
-
-      socket.on('data', function (chunk) {
-        console.log(`Data received from client: ${chunk.toString()}`)
-      })
-
-      socket.on('end', function () {
-        console.log('Closing connection with the client')
-      })
-
-      socket.on('error', function (err) {
-        console.log(`Error: ${err}`)
-      })
+    server.listen(this.port, () => {
+      console.info(`Listening tcp://0.0.0.0:${this.port}`)
+      if (callback) callback(server)
     })
+  }
+
+  /**
+   * Register the method to the map.
+   */
+  register(o: object): void {
+    this.map.set(o.constructor.name, o)
+  }
+
+  /**
+   * Hander the client message.
+   */
+  handler(message: Request): string {
+    const res = handler(message, this.map)
+    return res
   }
 }
