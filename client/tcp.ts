@@ -2,7 +2,7 @@ import Client from './client'
 import { generateTimestampUUID } from '../utils/random'
 import Pool from './pool'
 import Response from '../type/response'
-import { newRequest } from '../type/request'
+import Request, { newRequest } from '../type/request'
 
 export default class Tcp implements Client {
   /**
@@ -22,9 +22,7 @@ export default class Tcp implements Client {
   async call(method: string, ...args: any[]): Promise<any> {
     const id = generateTimestampUUID()
     const request = newRequest(id, this.service + '/' + method, args)
-    console.log('call', request)
     return this.pool.borrow().then((conn) => {
-      console.log('req', request)
       const res = conn.write(JSON.stringify(request))
       if (res === true) {
         // Release the connection.
@@ -33,7 +31,15 @@ export default class Tcp implements Client {
         return Promise.reject(new Error('The connection was broken.'))
       }
       return new Promise((resolve, reject) => {
-        this.map.set(id, resolve)
+        this.map.set(id, (data: Response) => {
+          if (data.error != undefined) {
+            reject(new Error(data.error.message))
+          } else if (data.result) {
+            resolve(data.result)
+          } else {
+            reject(new Error('Unknown error'))
+          }
+        })
         setTimeout(() => {
           this.map.delete(id)
           reject()
@@ -43,8 +49,7 @@ export default class Tcp implements Client {
   }
 
   handler(data: Response) {
-    console.log('data', data, this.map)
     const resolve = this.map.get(data.id)
-    if (resolve !== undefined) resolve(data.result)
+    if (resolve !== undefined) resolve(data)
   }
 }

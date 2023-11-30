@@ -1,5 +1,6 @@
 import Request from '../type/request'
 import { newResult, newError } from '../type/response'
+import { METHOD_NOT_FOUND } from '../type/error'
 
 export default function handler(message: Request, map: Map<string, object>): string {
   const methodArray = message.method.split('/')
@@ -13,7 +14,7 @@ export default function handler(message: Request, map: Map<string, object>): str
       return JSON.stringify(newResult(message.id, res))
     }
   } else {
-    return JSON.stringify(newError(message.id, res))
+    return JSON.stringify(newError(message.id, METHOD_NOT_FOUND))
   }
-  return JSON.stringify(message)
+  return JSON.stringify(newError(message.id, METHOD_NOT_FOUND))
 }

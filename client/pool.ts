@@ -87,15 +87,12 @@ export default class Pool {
     const addressObj = splitAddress(address)
 
     return new Promise((resolve, reject) => {
-      console.info('123', addressObj)
-      socket.connect(4000, 'localhost', () => {
+      socket.connect(addressObj.port, addressObj.host, () => {
         socket.on('ready', () => {
           resolve(socket)
         })
         socket.on('close', () => {})
         socket.on('data', (data) => {
-          console.log('data', data)
-          console.log(data.toString())
           this.client.handler(JSON.parse(data.toString()))
         })
         socket.on('error', (error) => {
@@ -104,7 +101,6 @@ export default class Pool {
           reject(error)
         })
         socket.on('timeout', () => {
-          console.info('123456', addressObj)
           delete this.activeAddresses[key]
           reject(new Error('Connection timeout.'))
         })
@@ -117,7 +113,6 @@ export default class Pool {
    * @returns
    */
   public borrow(): Promise<net.Socket> {
-    console.log('this.activeTotal', this.activeTotal)
     if (this.activeTotal <= 0) {
       return Promise.reject(new Error('Unable to connect to the server.'))
     }

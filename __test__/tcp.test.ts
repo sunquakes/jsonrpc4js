@@ -20,14 +20,17 @@ test('Tcp client call.', async () => {
       resolve(s)
     })
   })
-  await sleep(5000)
   expect(1).toEqual(1)
   // Call server.
   const client = new Client('Rpc', `localhost:${port}`)
   client.call('add', 1, 2).then((result) => {
-    console.log('result', result)
     expect(result).toEqual(3)
+  })
+
+  // Method not found.
+  client.call('add0', 1, 2).catch((error) => {
+    expect(error).toEqual(new Error('Method not found'))
   })
   await sleep(1000)
   s.close()
-}, 20000)
+})

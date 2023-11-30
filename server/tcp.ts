@@ -31,10 +31,7 @@ export default class Tcp implements Server {
       socket.on('close', () => {})
 
       socket.on('data', (data) => {
-        console.log('server data', data.toString())
         const res = handler(JSON.parse(data.toString()), this.map)
-        console.log('server data map', this.map)
-        console.log('server data res', res)
         socket.write(res)
       })
       socket.on('end', function () {})
