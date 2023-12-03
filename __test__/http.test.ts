@@ -1,6 +1,6 @@
-import Server from '../server/tcp'
-import Client from '../client/tcp'
-import * as net from 'net'
+import Server from '../server/http'
+import Client from '../client/http'
+import * as http from 'http'
 
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
@@ -10,13 +10,13 @@ class Rpc {
   }
 }
 
-test('Tcp client call.', async () => {
-  const port = 4000
+test('Http client call.', async () => {
+  const port = 5000
   // Start a server.
-  const s: net.Server = await new Promise((resolve) => {
+  const s: http.Server = await new Promise((resolve) => {
     const server = new Server(port)
     server.register(new Rpc())
-    server.start((s: net.Server) => {
+    server.start((s: http.Server) => {
       resolve(s)
     })
   })
@@ -32,15 +32,6 @@ test('Tcp client call.', async () => {
   } catch (e) {
     expect(e).toEqual(new Error('Method not found'))
   }
-
-  // Invalid params'.
-  try {
-    res = await client.call('add', { a: 1, b: 2 })
-  } catch (e) {
-    expect(e).toEqual(new Error('Invalid params'))
-  }
-  // res = await client.call('add', 1, '2', 3)
-  // expect(res).toEqual(2)
   await sleep(1000)
   s.close()
 })

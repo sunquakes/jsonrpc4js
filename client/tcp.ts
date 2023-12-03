@@ -2,7 +2,7 @@ import Client from './client'
 import { generateTimestampUUID } from '../utils/random'
 import Pool from './pool'
 import Response from '../type/response'
-import Request, { newRequest } from '../type/request'
+import { newRequest } from '../type/request'
 
 export default class Tcp implements Client {
   /**
