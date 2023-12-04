@@ -40,7 +40,7 @@ export default class Http implements Client {
           data += chunk
         })
 
-        res.on('close', () => {
+        res.on('end', () => {
           this.handler(JSON.parse(data))
         })
       }
@@ -60,13 +60,13 @@ export default class Http implements Client {
       })
       setTimeout(() => {
         this.map.delete(id)
-        reject()
+        reject(new Error('Timeout'))
       }, 10000)
     })
   }
 
   handler(data: Response) {
-    const resolve = this.map.get(data.id)
-    if (resolve !== undefined) resolve(data)
+    const callback = this.map.get(data.id)
+    if (callback !== undefined) callback(data)
   }
 }

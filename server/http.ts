@@ -28,19 +28,20 @@ export default class Http implements Server {
    */
   start(callback?: Function): void {
     var server = http.createServer((request, response) => {
-      console.log('http request data', request)
-      const socket = request.socket
-      socket.on('close', () => {})
+      let requestData = ''
 
-      socket.on('data', (data) => {
-        console.log('http data', data)
-        const res = handler(JSON.parse(data.toString()), this.map)
+      // Listen for data events
+      request.on('data', (chunk) => {
+        requestData += chunk
+      })
+
+      // Listen for end event (all data received)
+      request.on('end', () => {
+        const parsedData = JSON.parse(requestData)
+        const res = this.handler(parsedData)
         response.writeHead(200, { 'Content-Type': 'application/json' })
         response.end(res)
       })
-      socket.on('end', function () {})
-      response.writeHead(200, { 'Content-Type': 'application/json' })
-      response.end({ test: 1 })
     })
 
     server.listen(this.port, () => {

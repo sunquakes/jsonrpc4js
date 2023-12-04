@@ -49,7 +49,7 @@ export default class Tcp implements Client {
   }
 
   handler(data: Response) {
-    const resolve = this.map.get(data.id)
-    if (resolve !== undefined) resolve(data)
+    const callback = this.map.get(data.id)
+    if (callback !== undefined) callback(data)
   }
 }
