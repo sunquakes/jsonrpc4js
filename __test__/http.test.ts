@@ -1,5 +1,5 @@
-import Server from '../server/http'
-import Client from '../client/http'
+import Server from '../src/server/http'
+import Client from '../src/client/http'
 import * as http from 'http'
 
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))

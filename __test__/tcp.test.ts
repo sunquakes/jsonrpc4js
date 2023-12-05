@@ -1,5 +1,5 @@
-import Server from '../server/tcp'
-import Client from '../client/tcp'
+import Server from '../src/server/tcp'
+import Client from '../src/client/tcp'
 import * as net from 'net'
 
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))

@@ -3,20 +3,26 @@
   "version": "0.0.1",
   "author": "Shing Rui <sunquakes@outlook.com>",
   "description": "A javascript client and server over http or tcp implementation of JSON-RPC 2.0.",
-  "main": "index.js",
+  "main": "dist/bundle.js",
+  "module": "dist/bundle.mjs",
+  "type": "module",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rollup -c"
   },
   "keywords": [],
   "license": "Apache-2.0",
   "devDependencies": {
-    "babel-jest": "^29.7.0",
     "@babel/core": "^7.23.3",
     "@babel/preset-env": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.9.0",
+    "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
+    "rollup": "^4.6.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-typescript": "^1.0.1",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   }

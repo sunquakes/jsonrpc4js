@@ -1,4 +1,4 @@
-import Server from '../server/tcp'
+import Server from '../src/server/tcp'
 
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
 
