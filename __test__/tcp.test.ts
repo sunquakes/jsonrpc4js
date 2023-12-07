@@ -59,7 +59,7 @@ test('Tcp protocol client call server.', async () => {
   })
 
   // Call server.
-  const client = NewClient('Rpc', 'http', `localhost:${port}`)
+  const client = NewClient('Rpc', 'tcp', `localhost:${port}`)
   let res = await client.call('add', 1, 2)
   expect(res).toEqual(3)
 
