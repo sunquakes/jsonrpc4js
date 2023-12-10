@@ -1,6 +1,6 @@
 import Driver from './driver'
 import querystring from 'querystring'
-import { json } from 'utils/request'
+import { json } from '../utils/request'
 
 type RegisterService = {
   ID: string
@@ -19,6 +19,18 @@ type Check = {
   TCP: string | undefined
   Interval: string | string[]
   Timeout: string | string[]
+}
+
+type Service = {
+  ID: string
+  Service: string
+  Port: number
+  Address: string
+}
+
+type HealthService = {
+  AggregatedStatus: string
+  Service: Service
 }
 
 export default class Consul implements Driver {
@@ -83,8 +95,13 @@ export default class Consul implements Driver {
     const parsedUrl = new URL(this.url)
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     const token = queryParams.token
-    const getUrl = this.getUrl(parsedUrl, '/v1/agent/service/register', token)
-    return json(getUrl, 'GET', `/v1/agent/health/service/name/${name}`)
+    const getUrl = this.getUrl(parsedUrl, `/v1/agent/health/service/name/${name}`, token)
+    return json(getUrl, 'GET', null).then((res) => {
+      const list = JSON.parse(res)
+      return list
+        .map((item: HealthService) => `${item.Service.Address}:${item.Service.Port}`)
+        .join(',')
+    })
   }
 
   private getUrl(parsedUrl: URL, path: string, token?: string | string[]): string {

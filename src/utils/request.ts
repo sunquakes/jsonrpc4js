@@ -1,6 +1,6 @@
 import * as http from 'http'
 
-export function json(url: string, method: string, body: string): Promise<any> {
+export function json(url: string, method: string, body: string | null): Promise<any> {
   return new Promise((resolve, reject) => {
     const request = http.request(
       url,
@@ -8,7 +8,7 @@ export function json(url: string, method: string, body: string): Promise<any> {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body)
+          'Content-Length': body ? Buffer.byteLength(body) : 0
         }
       },
       (res) => {
@@ -26,7 +26,9 @@ export function json(url: string, method: string, body: string): Promise<any> {
     request.on('error', (error: Error) => {
       reject(error)
     })
-    request.write(body)
+    if (body) {
+      request.write(body)
+    }
     request.end()
   })
 }
