@@ -1,4 +1,4 @@
-type Address = {
+export type Address = {
   host: string
   port: number
 }
