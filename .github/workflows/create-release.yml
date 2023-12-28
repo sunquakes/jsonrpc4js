@@ -31,7 +31,7 @@ jobs:
       - name: Extract Changelog
         id: extract_changelog
         run: |
-          zip --junk-paths cesium-components-vue ./dist/*
+          zip --junk-paths jsonrpc4js ./dist/*
 
           # Set the delimiter
           delimiter="---"
@@ -65,8 +65,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./cesium-components-vue.zip
-          asset_name: cesium-components-vue.zip
+          asset_path: ./jsonrpc4js.zip
+          asset_name: jsonrpc4js.zip
           asset_content_type: application/zip
 
       - name: Publish to NPM
@@ -75,17 +75,3 @@ jobs:
           pnpm publish --no-git-checks --access=public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      - name: Install Vuepress and Build Docs
-        run: |
-          cd docs
-          pnpm i
-          pnpm docs:build
-
-      - name: Deploy to GitHub Pages
-        uses: crazy-max/ghaction-github-pages@v2
-        with:
-          target_branch: gh-pages
-          build_dir: docs/docs/.vuepress/dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
