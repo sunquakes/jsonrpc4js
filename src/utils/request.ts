@@ -32,3 +32,18 @@ export function json(url: string, method: string, body: string | null): Promise<
     request.end()
   })
 }
+
+export function get(url: string): Promise<any> {
+  return new Promise((resolve) => {
+    http.get(url, (res) => {
+      let data = ''
+
+      res.on('data', (chunk) => {
+        data += chunk
+      })
+      res.on('end', () => {
+        resolve(data)
+      })
+    })
+  })
+}
