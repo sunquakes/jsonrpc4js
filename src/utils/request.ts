@@ -2,7 +2,7 @@ import * as http from 'http'
 
 export function json(url: string, method: string, body: string | null): Promise<any> {
   return new Promise((resolve, reject) => {
-    const request = http.request(
+    const req = http.request(
       url,
       {
         method: method,
@@ -12,24 +12,29 @@ export function json(url: string, method: string, body: string | null): Promise<
         }
       },
       (res) => {
-        let data = ''
+        if (res.statusCode !== 200) {
+          const error = new Error(`Request failed with status code ${res.statusCode}`)
+          req.emit('error', error)
+        } else {
+          let data = ''
 
-        res.on('data', (chunk) => {
-          data += chunk
-        })
+          res.on('data', (chunk) => {
+            data += chunk
+          })
 
-        res.on('end', () => {
-          resolve(data)
-        })
+          res.on('end', () => {
+            resolve(data)
+          })
+        }
       }
     )
-    request.on('error', (error: Error) => {
+    req.on('error', (error: Error) => {
       reject(error)
     })
     if (body) {
-      request.write(body)
+      req.write(body)
     }
-    request.end()
+    req.end()
   })
 }
 
