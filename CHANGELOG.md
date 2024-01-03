@@ -4,3 +4,4 @@
 - Added tcp server and client.
 - Added http server and client.
 - Added consul registry and discovery.
+- Added nacos registry and discovery.
