@@ -1,3 +1,4 @@
+import Driver from 'discovery/driver'
 import * as os from 'os'
 
 export function getLocalIp(): string | null {
@@ -23,7 +24,21 @@ export type Address = {
   host: string
   port: number
 }
+
 export function splitAddress(address: string): Address {
   const addressArray = address.split(':')
   return { host: addressArray[0], port: addressArray[1] ? Number(addressArray[1]) : 80 }
+}
+
+export function splitAddresses(address: string): Array<Address> {
+  const addressArray = address.split(',')
+  return addressArray.map((item) => splitAddress(item))
+}
+
+export function loadBalanceAddress(addresses: Array<Address>): Address | null {
+  if (addresses.length === 0) {
+    return null
+  }
+  const randomIndex = Math.floor(Math.random() * addresses.length)
+  return addresses[randomIndex]
 }
