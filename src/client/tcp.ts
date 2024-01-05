@@ -3,6 +3,7 @@ import { generateTimestampUUID } from '../utils/random'
 import Pool from './pool'
 import Response from '../type/response'
 import { newRequest } from '../type/request'
+import Driver from 'discovery/driver'
 
 export default class Tcp implements Client {
   /**
@@ -14,9 +15,9 @@ export default class Tcp implements Client {
 
   private pool: Pool
 
-  constructor(service: string, address: string, options?: {}) {
+  constructor(service: string, address: string | Driver, options?: {}) {
     this.service = service
-    this.pool = new Pool(address, this)
+    this.pool = new Pool(service, address, this)
   }
 
   async call(method: string, ...args: any[]): Promise<any> {

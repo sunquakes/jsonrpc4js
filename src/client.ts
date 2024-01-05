@@ -1,8 +1,13 @@
 import TcpClient from './client/tcp'
 import HttpClient from './client/http'
 import Client from 'client/client'
+import Driver from 'discovery/driver'
 
-export default function NewClient(service: string, protocol: string, address: string): Client {
+export default function NewClient(
+  service: string,
+  protocol: string,
+  address: string | Driver
+): Client {
   let client
   switch (protocol) {
     case 'tcp':

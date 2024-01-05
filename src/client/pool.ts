@@ -1,6 +1,7 @@
 import * as net from 'net'
 import { splitAddress } from '../utils/address'
 import Client from './client'
+import Driver from 'discovery/driver'
 
 type Option = {
   minIdle: number
@@ -9,9 +10,14 @@ type Option = {
 
 export default class Pool {
   /**
+   * The remote service name.
+   */
+  private service: string
+
+  /**
    * Service address.
    */
-  private address: string
+  private address: string | Driver
 
   /**
    * The client.
@@ -26,7 +32,7 @@ export default class Pool {
   /**
    * The number of active service address.
    */
-  private activeTotal: number
+  private activeTotal: number = 0
 
   /**
    * The service connections.
@@ -43,20 +49,25 @@ export default class Pool {
    */
   private option: Option
 
-  constructor(address: string, client: Client, option?: Option) {
+  constructor(service: string, address: string | Driver, client: Client, option?: Option) {
+    this.service = service
     this.address = address
     this.client = client
     this.option = option || { minIdle: 1, maxIdle: 10 }
-    this.activeTotal = this.setActiveAddresses()
-    this.setConns()
   }
 
   /**
    * Set the pool active addresses.
    * @returns
    */
-  private setActiveAddresses(): number {
-    const addresses = this.address.split(',')
+  private async setActiveAddresses(): Promise<number> {
+    let address: string
+    if (typeof this.address == 'string') {
+      address = this.address
+    } else {
+      address = await this.address.get(this.service)
+    }
+    const addresses = address.split(',')
     this.activeAddresses = addresses
     return this.activeAddresses.length
   }
@@ -64,11 +75,11 @@ export default class Pool {
   /**
    * Set the pool connections.
    */
-  private async setConns() {
+  public async setConns() {
+    await this.setActiveAddresses()
     for (let i = 0; i < this.option.minIdle; i++) {
       const conn = await this.createConn()
       this.conns.push(conn)
-      this.activeTotal++
     }
   }
 
@@ -76,19 +87,21 @@ export default class Pool {
    * Create a tcp connection.
    * @returns
    */
-  private createConn(): Promise<net.Socket> {
+  private async createConn(): Promise<net.Socket> {
     const size = this.activeAddresses.length
     if (size == 0) {
-      this.setActiveAddresses()
+      await this.setActiveAddresses()
     }
     const key = this.activeTotal % size
     const address = this.activeAddresses[key]
     const socket = new net.Socket()
     const addressObj = splitAddress(address)
 
+    let isRemoved = false
     return new Promise((resolve, reject) => {
       socket.connect(addressObj.port, addressObj.host, () => {
         socket.on('ready', () => {
+          this.activeTotal++
           resolve(socket)
         })
         socket.on('close', () => {})
@@ -97,11 +110,19 @@ export default class Pool {
         })
         socket.on('error', (error) => {
           console.error('error', error)
-          delete this.activeAddresses[key]
+          if (!isRemoved) {
+            isRemoved = true
+            delete this.activeAddresses[key]
+            this.activeTotal--
+          }
           reject(error)
         })
         socket.on('timeout', () => {
-          delete this.activeAddresses[key]
+          if (!isRemoved) {
+            isRemoved = true
+            delete this.activeAddresses[key]
+            this.activeTotal--
+          }
           reject(new Error('Connection timeout.'))
         })
       })
@@ -112,7 +133,10 @@ export default class Pool {
    * Borrow a tcp connection from pool.
    * @returns
    */
-  public borrow(): Promise<net.Socket> {
+  public async borrow(): Promise<net.Socket> {
+    if (this.activeTotal <= 0) {
+      await this.setConns()
+    }
     if (this.activeTotal <= 0) {
       return Promise.reject(new Error('Unable to connect to the server.'))
     }
@@ -126,7 +150,6 @@ export default class Pool {
         }
       })
     }
-    this.activeTotal++
     return this.createConn()
   }
 

@@ -106,8 +106,8 @@ export default class Consul implements Driver {
 
   private getUrl(parsedUrl: URL, path: string, token?: string | string[]): string {
     if (token) {
-      return `${parsedUrl.protocol}//${parsedUrl.host}${path}?token=${token}`
+      return `${parsedUrl.origin}${path}?token=${token}`
     }
-    return `${parsedUrl.protocol}//${parsedUrl.host}${path}`
+    return `${parsedUrl.origin}${path}`
   }
 }
