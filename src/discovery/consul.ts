@@ -40,7 +40,7 @@ export default class Consul implements Driver {
     this.url = url
   }
 
-  register(name: string, protocol: string, hostname: string, port: number): Promise<string> {
+  async register(name: string, protocol: string, hostname: string, port: number): Promise<string> {
     const parsedUrl = new URL(this.url)
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     const instanceId = queryParams.instanceId
@@ -91,17 +91,16 @@ export default class Consul implements Driver {
     }
   }
 
-  get(name: string): Promise<string> {
+  async get(name: string): Promise<string> {
     const parsedUrl = new URL(this.url)
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     const token = queryParams.token
     const getUrl = this.getUrl(parsedUrl, `/v1/agent/health/service/name/${name}`, token)
-    return json(getUrl, 'GET', null).then((res) => {
-      const list = JSON.parse(res)
-      return list
-        .map((item: HealthService) => `${item.Service.Address}:${item.Service.Port}`)
-        .join(',')
-    })
+    const res:string = await json(getUrl, 'GET', null)
+    const list = JSON.parse(res)
+    return list
+      .map((item: HealthService) => `${item.Service.Address}:${item.Service.Port}`)
+      .join(',')
   }
 
   private getUrl(parsedUrl: URL, path: string, token?: string | string[]): string {

@@ -34,9 +34,9 @@ export default class Http implements Client {
 
   /**
    * Call service method to the server.
-   * @param method 
-   * @param args 
-   * @returns 
+   * @param method
+   * @param args
+   * @returns
    */
   async call(method: string, ...args: any[]): Promise<any> {
     const id = generateTimestampUUID()
@@ -69,7 +69,9 @@ export default class Http implements Client {
     )
 
     req.on('error', (e) => {
-      this.activeAddresses = this.activeAddresses.filter(item => item.host != address.host || item.port != address.port)
+      this.activeAddresses = this.activeAddresses.filter(
+        (item) => item.host != address.host || item.port != address.port
+      )
     })
 
     // Write data to request body
