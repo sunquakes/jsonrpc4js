@@ -99,33 +99,32 @@ export default class Pool {
 
     let isRemoved = false
     return new Promise((resolve, reject) => {
-      socket.connect(addressObj.port, addressObj.host, () => {
-        socket.on('ready', () => {
-          this.activeTotal++
-          resolve(socket)
-        })
-        socket.on('close', () => {})
-        socket.on('data', (data) => {
-          this.client.handler(JSON.parse(data.toString()))
-        })
-        socket.on('error', (error) => {
-          console.error('error', error)
-          if (!isRemoved) {
-            isRemoved = true
-            delete this.activeAddresses[key]
-            this.activeTotal--
-          }
-          reject(error)
-        })
-        socket.on('timeout', () => {
-          if (!isRemoved) {
-            isRemoved = true
-            delete this.activeAddresses[key]
-            this.activeTotal--
-          }
-          reject(new Error('Connection timeout.'))
-        })
+      socket.on('ready', () => {
+        this.activeTotal++
+        resolve(socket)
       })
+      socket.on('close', () => {})
+      socket.on('data', (data) => {
+        this.client.handler(JSON.parse(data.toString()))
+      })
+      socket.on('error', (error) => {
+        console.error('error', error)
+        if (!isRemoved) {
+          isRemoved = true
+          delete this.activeAddresses[key]
+          this.activeTotal--
+        }
+        reject(error)
+      })
+      socket.on('timeout', () => {
+        if (!isRemoved) {
+          isRemoved = true
+          delete this.activeAddresses[key]
+          this.activeTotal--
+        }
+        reject(new Error('Connection timeout.'))
+      })
+      socket.connect(addressObj.port, addressObj.host)
     })
   }
 
