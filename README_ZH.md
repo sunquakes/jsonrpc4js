@@ -1,4 +1,4 @@
-English | [🇨🇳 中文](https://github.com/sunquakes/jsonrpc4js/blob/main/README_ZH.md)
+[English](https://github.com/sunquakes/jsonrpc4js/blob/main/README.md) | 🇨🇳 中文
 
 # JSONRPC4JS
 
@@ -13,19 +13,19 @@ English | [🇨🇳 中文](https://github.com/sunquakes/jsonrpc4js/blob/main/RE
   <img alt="jsonrpc4js" src="https://img.shields.io/github/v/release/sunquakes/jsonrpc4js">
 </p>
 
-## Documentation
+## 文档
 
-Visit [https://www.moonquakes.io/guide/javascript.html](https://www.moonquakes.io/guide/javascript.html).
+访问 [https://www.moonquakes.io/guide/javascript.html](https://www.moonquakes.io/guide/javascript.html).
 
-## Quick Start
+## 快速开始
 
-### Installing
+### 安装
 
 ```bash
 pnpm add jsonrpc4js
 ```
 
-### Server
+### 服务端
 
 ```ts
 const { NewServer } = require('jsonrpc4js')
@@ -41,7 +41,7 @@ server.register(new TcpRpc())
 server.start()
 ```
 
-### Client
+### 客户端
 
 ```ts
 const { TcpClient } = require('jsonrpc4js')
@@ -50,16 +50,16 @@ const client = new TcpClient('TcpRpc', `localhost:3200`)
 let res = await client.call('add', 1, 2) // 3
 ```
 
-## Service registration & discovery
+## 服务注册发现
 
 ### consul
 
 ```ts
 const { Consul } = require('jsonrpc4js')
 
-const discovery = new Consul('http://localhost:8500')
+const discovery = new jsonrpc4js.Consul('http://localhost:8500')
 
-// Set discovery in server and client.
+// 设置服务端和客户端注册中心
 // const server = NewServer('tcp', port, discovery)
 // const client = NewClient('TcpRpc', 'tcp', discovery)
 ```
@@ -69,19 +69,19 @@ const discovery = new Consul('http://localhost:8500')
 ```ts
 const { Nacos } = require('jsonrpc4js')
 
-const discovery = new Nacos('http://localhost:8848')
+const discovery = new jsonrpc4js.Nacos('http://localhost:8848')
 
-// Set discovery in server and client.
+// 设置服务端和客户端注册中心
 // const server = NewServer('tcp', port, discovery)
 // const client = NewClient('TcpRpc', 'tcp', discovery)
 ```
 
-## Test
+### 测试
 
 ```bash
 pnpm test
 ```
 
-## License
+## 证书
 
 [Apache-2.0 license](https://github.com/sunquakes/jsonrpc4js/blob/main/LICENSE)

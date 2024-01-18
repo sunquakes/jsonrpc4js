@@ -34,9 +34,9 @@ export default class Http implements Client {
 
   /**
    * Call service method to the server.
-   * @param method 
-   * @param args 
-   * @returns 
+   * @param method
+   * @param args
+   * @returns
    */
   async call(method: string, ...args: any[]): Promise<any> {
     const id = generateTimestampUUID()
@@ -63,13 +63,15 @@ export default class Http implements Client {
         })
 
         res.on('end', () => {
-          this.handler(JSON.parse(data))
+          this.handler(data)
         })
       }
     )
 
     req.on('error', (e) => {
-      this.activeAddresses = this.activeAddresses.filter(item => item.host != address.host || item.port != address.port)
+      this.activeAddresses = this.activeAddresses.filter(
+        (item) => item.host != address.host || item.port != address.port
+      )
     })
 
     // Write data to request body
@@ -106,7 +108,8 @@ export default class Http implements Client {
     return loadBalanceAddress(this.activeAddresses)
   }
 
-  handler(data: Response) {
+  handler(res: string) {
+    const data = JSON.parse(res)
     const callback = this.map.get(data.id)
     if (callback !== undefined) callback(data)
   }

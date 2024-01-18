@@ -46,18 +46,17 @@ export default class Nacos implements Driver {
     return res
   }
 
-  get(name: string): Promise<string> {
+  async get(name: string): Promise<string> {
     const parsedUrl = new URL(this.url)
     let params = new Map<string, any>()
     params.set('serviceName', name)
     const getUrl = this.getUrl(parsedUrl, `/nacos/v1/ns/instance/list`, params)
-    return get(getUrl).then((res) => {
-      res = JSON.parse(res)
-      if (!res || !res.hosts) {
-        return ''
-      }
-      return res.hosts.map((item: Service) => `${item.ip}:${item.port}`).join(',')
-    })
+    const res: string = await get(getUrl)
+    const body = JSON.parse(res)
+    if (!body || !body.hosts) {
+      return ''
+    }
+    return body.hosts.map((item: Service) => `${item.ip}:${item.port}`).join(',')
   }
 
   beat(name: string, hostname: string, port: number): Promise<string> {

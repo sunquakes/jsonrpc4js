@@ -8,8 +8,8 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./bundle.mjs",
-      "require": "./bundle.cjs"
+      "import": "./dist/bundle.mjs",
+      "require": "./dist/bundle.cjs"
     }
   },
   "scripts": {
