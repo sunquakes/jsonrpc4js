@@ -105,10 +105,9 @@ export default class Pool {
       })
       socket.on('close', () => {})
       socket.on('data', (data) => {
-        this.client.handler(JSON.parse(data.toString()))
+        this.client.handler(data.toString())
       })
       socket.on('error', (error) => {
-        console.error('error', error)
         if (!isRemoved) {
           isRemoved = true
           delete this.activeAddresses[key]

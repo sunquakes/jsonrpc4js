@@ -63,7 +63,7 @@ export default class Http implements Client {
         })
 
         res.on('end', () => {
-          this.handler(JSON.parse(data))
+          this.handler(data)
         })
       }
     )
@@ -108,7 +108,8 @@ export default class Http implements Client {
     return loadBalanceAddress(this.activeAddresses)
   }
 
-  handler(data: Response) {
+  handler(res: string) {
+    const data = JSON.parse(res)
     const callback = this.map.get(data.id)
     if (callback !== undefined) callback(data)
   }

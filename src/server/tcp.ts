@@ -5,6 +5,10 @@ import Request from '../type/request'
 import Driver from '../discovery/driver'
 import { getLocalIp } from '../utils/address'
 
+export type Options = {
+  delimiter: string
+}
+
 export default class Tcp implements Server {
   /**
    * The method map.
@@ -26,11 +30,19 @@ export default class Tcp implements Server {
    */
   private discovery: Driver | undefined
 
-  constructor(port: number, discovery?: Driver) {
+  /**
+   * The server options.
+   */
+  private options: Options = { delimiter: '\r\n' }
+
+  constructor(port: number, discovery?: Driver, options?: {}) {
     this.port = port
     if (discovery != undefined) {
       this.discovery = discovery
       this.hostname = getLocalIp()
+    }
+    if (options !== undefined) {
+      this.options = Object.assign(this.options, options)
     }
   }
 
@@ -47,8 +59,11 @@ export default class Tcp implements Server {
       socket.on('close', () => {})
 
       socket.on('data', (data) => {
-        const res = handler(JSON.parse(data.toString()), this.map)
-        socket.write(res)
+        const delimiter = this.options.delimiter
+        let json = data.toString()
+        json = json.substring(0, json.length - delimiter.length)
+        const res = handler(JSON.parse(json), this.map)
+        socket.write(res + delimiter)
       })
       socket.on('end', function () {})
     })
