@@ -56,7 +56,7 @@ export default class Nacos implements Driver {
     if (!body || !body.hosts) {
       return ''
     }
-    return body.hosts.map((item: Service) => `${item.ip}:${item.port}`).join(',')
+    return body.hosts.filter((item: Service) => item.healthy).map((item: Service) => `${item.ip}:${item.port}`).join(',')
   }
 
   beat(name: string, hostname: string, port: number): Promise<string> {
