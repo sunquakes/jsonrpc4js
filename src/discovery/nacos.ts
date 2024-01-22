@@ -24,7 +24,7 @@ export default class Nacos implements Driver {
     this.heatbeat()
   }
 
-  async register(name: string, protocol: string, hostname: string, port: number): Promise<string> {
+  async register(name: string, protocol: string, hostname: string, port: number): Promise<boolean> {
     const parsedUrl = new URL(this.url)
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     let ephemeral = queryParams.ephemeral
@@ -43,7 +43,7 @@ export default class Nacos implements Driver {
     if (ephemeral === 'true') {
       this.heartbeatList.push({ ip: hostname, port: port, healthy: true, instanceId: name })
     }
-    return res
+    return res === 'ok'
   }
 
   async get(name: string): Promise<string> {

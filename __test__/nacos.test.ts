@@ -7,7 +7,7 @@ test('Test nacos register.', async () => {
   ;(json as jest.Mock).mockResolvedValue('ok')
   const nacos = new Nacos('http://localhost:8848')
   const res = await nacos.register('test', 'http', '192.168.1.15', 3232)
-  expect(res).toEqual('ok')
+  expect(res).toEqual(true)
 })
 
 test('Test nacos get.', async () => {

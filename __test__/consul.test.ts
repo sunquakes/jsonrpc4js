@@ -7,7 +7,7 @@ test('Test consul register.', async () => {
   ;(json as jest.Mock).mockResolvedValue('')
   const consul = new Consul('http://localhost:8500')
   const res = await consul.register('test', 'http', '192.168.1.15', 5002)
-  expect(res).toEqual('')
+  expect(res).toEqual(true)
 })
 
 test('Test consul get.', async () => {

@@ -1,5 +1,5 @@
 import * as net from 'net'
-import Server from './server'
+import Server, { REGISTER_RETRY_INTERVAL } from './server'
 import handler from './handler'
 import Request from '../type/request'
 import Driver from '../discovery/driver'
@@ -77,10 +77,15 @@ export default class Tcp implements Server {
   /**
    * Register the method to the map.
    */
-  register(o: object): void {
+  async register(o: object): Promise<void> {
     this.map.set(o.constructor.name, o)
     if (this.discovery !== undefined && this.hostname != null) {
-      this.discovery.register(o.constructor.name, 'tcp', this.hostname, this.port)
+      const res = await this.discovery.register(o.constructor.name, 'tcp', this.hostname, this.port)
+      if (res !== true) {
+        setTimeout(() => {
+          this.register(o)
+        }, REGISTER_RETRY_INTERVAL)
+      }
     }
   }
 
