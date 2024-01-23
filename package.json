@@ -16,7 +16,7 @@
     "test": "jest",
     "build": "rollup -c"
   },
-  "keywords": [],
+  "keywords": ["typescript", "jsonrpc2.0", "nodejs", "microservice", "nacos", "consul"],
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "^7.23.3",

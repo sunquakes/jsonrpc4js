@@ -40,7 +40,7 @@ export default class Consul implements Driver {
     this.url = url
   }
 
-  async register(name: string, protocol: string, hostname: string, port: number): Promise<string> {
+  async register(name: string, protocol: string, hostname: string, port: number): Promise<boolean> {
     const parsedUrl = new URL(this.url)
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     const instanceId = queryParams.instanceId
@@ -56,38 +56,39 @@ export default class Consul implements Driver {
     const registerUrl = this.getUrl(parsedUrl, '/v1/agent/service/register', token)
     let isCheck = queryParams.check
     if (isCheck == 'true') {
-      return json(registerUrl, 'PUT', registerData).then((res) => {
-        let interval = queryParams.interval
-        if (!interval) {
-          interval = '30s'
-        }
-        let timeout = queryParams.timeout
-        if (!timeout) {
-          timeout = '10s'
-        }
-        let http, tcp
-        if (protocol == 'http' || protocol == 'https') {
-          http = `${protocol}://${hostname}:${port}`
-        } else if (protocol == 'tcp') {
-          tcp = `${hostname}:${port}`
-        }
-        const check: Check = {
-          ID: id,
-          Name: name,
-          Status: 'passing',
-          ServiceID: id,
-          HTTP: http,
-          Method: name,
-          TCP: tcp,
-          Interval: interval,
-          Timeout: timeout
-        }
-        const checkData = JSON.stringify(check)
-        const checkUrl = this.getUrl(parsedUrl, '/v1/agent/check/register', token)
-        return json(checkUrl, 'PUT', checkData)
-      })
+      const res = await json(registerUrl, 'PUT', registerData)
+      let interval = queryParams.interval
+      if (!interval) {
+        interval = '30s'
+      }
+      let timeout = queryParams.timeout
+      if (!timeout) {
+        timeout = '10s'
+      }
+      let http, tcp
+      if (protocol == 'http' || protocol == 'https') {
+        http = `${protocol}://${hostname}:${port}`
+      } else if (protocol == 'tcp') {
+        tcp = `${hostname}:${port}`
+      }
+      const check: Check = {
+        ID: id,
+        Name: name,
+        Status: 'passing',
+        ServiceID: id,
+        HTTP: http,
+        Method: name,
+        TCP: tcp,
+        Interval: interval,
+        Timeout: timeout
+      }
+      const checkData = JSON.stringify(check)
+      const checkUrl = this.getUrl(parsedUrl, '/v1/agent/check/register', token)
+      await json(checkUrl, 'PUT', checkData)
+      return res === ''
     } else {
-      return json(registerUrl, 'PUT', registerData)
+      const res = await json(registerUrl, 'PUT', registerData)
+      return res === ''
     }
   }
 
@@ -96,7 +97,7 @@ export default class Consul implements Driver {
     const queryParams = querystring.parse(parsedUrl.search.slice(1))
     const token = queryParams.token
     const getUrl = this.getUrl(parsedUrl, `/v1/agent/health/service/name/${name}`, token)
-    const res:string = await json(getUrl, 'GET', null)
+    const res: string = await json(getUrl, 'GET', null)
     const list = JSON.parse(res)
     return list
       .map((item: HealthService) => `${item.Service.Address}:${item.Service.Port}`)
