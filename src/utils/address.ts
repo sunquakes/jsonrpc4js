@@ -32,7 +32,7 @@ export function splitAddress(address: string): Address {
 
 export function splitAddresses(address: string): Array<Address> {
   const addressArray = address.split(',')
-  return addressArray.map((item) => splitAddress(item))
+  return addressArray.filter((item) => item != undefined).map((item) => splitAddress(item))
 }
 
 export function loadBalanceAddress(addresses: Array<Address>): Address | null {

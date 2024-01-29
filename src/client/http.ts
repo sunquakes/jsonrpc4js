@@ -105,6 +105,7 @@ export default class Http implements Client {
       address = await this.address.get(this.service)
     }
     this.activeAddresses = splitAddresses(address)
+    console.log('activeAddresses', this.activeAddresses)
     return loadBalanceAddress(this.activeAddresses)
   }
 

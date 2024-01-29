@@ -88,9 +88,13 @@ export default class Pool {
    * @returns
    */
   private async createConn(): Promise<net.Socket> {
-    const size = this.activeAddresses.length
+    let size = this.activeAddresses.length
     if (size == 0) {
       await this.setActiveAddresses()
+    }
+    size = this.activeAddresses.length
+    if (size == 0) {
+      return Promise.reject(new Error('No valid server available.'))
     }
     const key = this.activeTotal % size
     const address = this.activeAddresses[key]
