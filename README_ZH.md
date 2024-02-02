@@ -44,9 +44,9 @@ server.start()
 ### 客户端
 
 ```ts
-const { TcpClient } = require('jsonrpc4js')
+const { NewClient } = require('jsonrpc4js')
 
-const client = new TcpClient('TcpRpc', `localhost:3200`)
+const client = NewClient('TcpRpc', 'tcp', `localhost:3200`)
 let res = await client.call('add', 1, 2) // 3
 ```
 
