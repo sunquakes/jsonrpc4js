@@ -36,7 +36,7 @@ class TcpRpc {
   }
 }
 const port = 3200
-const server = NewServer('tcp', port)
+const server = NewServer('tcp', port) // 也支持http协议
 server.register(new TcpRpc())
 server.start()
 ```
@@ -46,7 +46,7 @@ server.start()
 ```ts
 const { NewClient } = require('jsonrpc4js')
 
-const client = NewClient('TcpRpc', 'tcp', `localhost:3200`)
+const client = NewClient('TcpRpc', 'tcp', `localhost:3200`) // 也支持http协议
 let res = await client.call('add', 1, 2) // 3
 ```
 
