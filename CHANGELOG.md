@@ -1,3 +1,8 @@
+## [1.0.1] - 2024-02-02
+- Edit client document.
+
+---
+
 ## [1.0.0] - 2024-02-01
 - Test intercommunicate stability with other moonquakes project.
 
