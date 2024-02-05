@@ -11,7 +11,11 @@ export default function handler(message: Request, map: Map<string, object>): str
     const method: Function = (service as any)[methodName]
     if (method !== undefined) {
       try {
-        const res = method(...message.params)
+        let params = message.params
+        if (!Array.isArray(params)) {
+          params = [params]
+        }
+        const res = method(...params)
         return JSON.stringify(newResult(message.id, res))
       } catch (e) {
         return JSON.stringify(newError(message.id, INVALID_PARAMS))
