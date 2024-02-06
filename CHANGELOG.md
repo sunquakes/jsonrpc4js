@@ -1,3 +1,8 @@
+## [1.0.2] - 2024-02-06
+- Fixed server adapt to object params.
+
+---
+
 ## [1.0.1] - 2024-02-02
 - Edit client document.
 
