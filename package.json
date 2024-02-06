@@ -1,6 +1,6 @@
 {
   "name": "jsonrpc4js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Shing Rui <sunquakes@outlook.com>",
   "description": "A javascript client and server over http or tcp implementation of JSON-RPC 2.0.",
   "main": "dist/bundle.cjs",
