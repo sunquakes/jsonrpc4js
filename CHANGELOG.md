@@ -1,3 +1,8 @@
+## [1.0.3] - 2024-02-06
+- Fixed server can not receive invalid object parameters.
+
+---
+
 ## [1.0.2] - 2024-02-06
 - Fixed server adapt to object params.
 
