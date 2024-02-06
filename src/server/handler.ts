@@ -1,6 +1,26 @@
 import Request from '../type/request'
 import { newResult, newError } from '../type/response'
 import { METHOD_NOT_FOUND, INVALID_PARAMS } from '../type/error'
+import { getMethodParameters } from '../utils/class'
+
+let serviceMethodParameters: Map<string, Array<string>> = new Map()
+
+function parameterObject2Array(
+  serviceName: string,
+  methodName: string,
+  params: { [key: string]: any },
+  method: Function
+) {
+  const key = `${serviceName}-${methodName}`
+  let names: Array<string>
+  if (serviceMethodParameters.has(key)) {
+    names = serviceMethodParameters.get(key) || []
+  } else {
+    names = getMethodParameters(method)
+    serviceMethodParameters.set(key, names)
+  }
+  return names.map((name) => params[name])
+}
 
 export default function handler(message: Request, map: Map<string, object>): string {
   const methodArray = message.method.split('/')
@@ -13,7 +33,7 @@ export default function handler(message: Request, map: Map<string, object>): str
       try {
         let params = message.params
         if (!Array.isArray(params)) {
-          params = [params]
+          params = parameterObject2Array(serviceName, methodName, params, method)
         }
         const res = method(...params)
         return JSON.stringify(newResult(message.id, res))
@@ -25,8 +45,4 @@ export default function handler(message: Request, map: Map<string, object>): str
     return JSON.stringify(newError(message.id, METHOD_NOT_FOUND))
   }
   return JSON.stringify(newError(message.id, METHOD_NOT_FOUND))
-}
-
-function checkParams(method: Function): boolean {
-  return false
 }

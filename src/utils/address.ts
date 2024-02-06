@@ -1,4 +1,3 @@
-import Driver from 'discovery/driver'
 import * as os from 'os'
 
 export function getLocalIp(): string | null {
