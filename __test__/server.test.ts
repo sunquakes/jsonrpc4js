@@ -1,11 +1,5 @@
 import HttpServer from '../src/server/http'
-import HttpClient from '../src/client/http'
-import NewServer from '../src/server'
-import NewClient from '../src/client'
 import * as http from 'http'
-import Consul from '../src/discovery/consul'
-import Nacos from '../src/discovery/nacos'
-import { get, json } from '../src/utils/request'
 
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 

@@ -1,3 +1,6 @@
+## [1.1.0] - 2024-03-03
+- Compatible method formats /xxx/xxx.
+
 ## [1.0.3] - 2024-02-06
 - Fixed server can not receive invalid object parameters.
 
