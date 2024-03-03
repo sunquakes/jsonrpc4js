@@ -23,7 +23,11 @@ function parameterObject2Array(
 }
 
 export default function handler(message: Request, map: Map<string, object>): string {
-  const methodArray = message.method.split('/')
+  let method = message.method
+  if (method.substring(0, 1) === '/') {
+    method = method.substring(1)
+  }
+  const methodArray = method.split('/')
   const serviceName = methodArray[0]
   const methodName = methodArray[1]
   const service: object | undefined = map.get(serviceName)
