@@ -69,8 +69,12 @@ export default class Http implements Server {
   /**
    * Register the method to the map.
    */
-  async register(o: object): Promise<void> {
-    this.map.set(o.constructor.name, o)
+  async register(o: object, name?: string): Promise<void> {
+    if (name) {
+      this.map.set(name, o)
+    } else {
+      this.map.set(o.constructor.name, o)
+    }
     if (this.discovery !== undefined && this.hostname != null) {
       const res = await this.discovery.register(
         o.constructor.name,
