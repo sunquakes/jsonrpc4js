@@ -1,3 +1,6 @@
+## [1.2.0] - 2024-03-04
+- Support define custom service name when register service.
+
 ## [1.1.0] - 2024-03-03
 - Compatible method formats /xxx/xxx.
 
