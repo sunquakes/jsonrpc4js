@@ -78,13 +78,11 @@ export default class Tcp implements Server {
    * Register the method to the map.
    */
   async register(o: object, name?: string): Promise<void> {
-    if (name) {
-      this.map.set(name, o)
-    } else {
-      this.map.set(o.constructor.name, o)
+    if (!name) {
+      name = o.constructor.name
     }
     if (this.discovery !== undefined && this.hostname != null) {
-      const res = await this.discovery.register(o.constructor.name, 'tcp', this.hostname, this.port)
+      const res = await this.discovery.register(name, 'tcp', this.hostname, this.port)
       if (res !== true) {
         setTimeout(() => {
           this.register(o)
