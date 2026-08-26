@@ -81,6 +81,7 @@ export default class Tcp implements Server {
     if (!name) {
       name = o.constructor.name
     }
+    this.map.set(name, o)
     if (this.discovery !== undefined && this.hostname != null) {
       const res = await this.discovery.register(name, 'tcp', this.hostname, this.port)
       if (res !== true) {
