@@ -81,7 +81,7 @@ __test__/             # jest tests, one per area
 
 ## Testing
 
-- Jest transpiles via `babel-jest` (`.babelrc` with preset-env + preset-typescript);
+- Jest transpiles via `babel-jest` (`babel.config.json` with preset-env + preset-typescript);
   type errors are therefore **not** caught by tests — check types separately with
   `npx tsc --noEmit` when changing types.
 - Tests start real servers on fixed ports (4000+ for TCP, etc.). Use a fresh,
