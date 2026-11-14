@@ -1,5 +1,6 @@
 import HttpServer from '../src/server/http'
 import * as http from 'http'
+import { AddressInfo } from 'net'
 
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
@@ -10,15 +11,15 @@ class HttpRpc {
 }
 
 test('Test request to server.', async () => {
-  const port = 9000
-  // Start a server.
+  // Port 0 lets the OS assign a free port, avoiding conflicts with other processes.
   const s: http.Server = await new Promise((resolve) => {
-    const server = new HttpServer(port)
+    const server = new HttpServer(0)
     server.register(new HttpRpc())
     server.start((s: http.Server) => {
       resolve(s)
     })
   })
+  const port = (s.address() as AddressInfo).port
 
   const postData =
     '{"id":"8a799769-8d18-41f1-a2db-9df15e9775d6","jsonrpc":"2.0","method":"/HttpRpc/add","params":[1,2]}'
@@ -57,15 +58,15 @@ test('Test request to server.', async () => {
 })
 
 test('Test custom service name.', async () => {
-  const port = 9001
-  // Start a server.
+  // Port 0 lets the OS assign a free port, avoiding conflicts with other processes.
   const s: http.Server = await new Promise((resolve) => {
-    const server = new HttpServer(port)
+    const server = new HttpServer(0)
     server.register(new HttpRpc(), 'http_rpc')
     server.start((s: http.Server) => {
       resolve(s)
     })
   })
+  const port = (s.address() as AddressInfo).port
 
   const postData =
     '{"id":"8a799769-8d18-41f1-a2db-9df15e9775d6","jsonrpc":"2.0","method":"/http_rpc/add","params":[1,2]}'
