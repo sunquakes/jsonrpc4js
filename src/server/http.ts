@@ -2,6 +2,8 @@ import * as http from 'http'
 import Server, { REGISTER_RETRY_INTERVAL } from './server'
 import handler from './handler'
 import Request from '../type/request'
+import { newError } from '../type/response'
+import { PARSE_ERROR } from '../type/error'
 import Driver from '../discovery/driver'
 import { getLocalIp } from '../utils/address'
 
@@ -43,9 +45,10 @@ export default class Http implements Server {
    * Start the tcp server.
    */
   start(callback?: Function): void {
-    var server = http.createServer((request, response) => {
+    const server = http.createServer((request, response) => {
       let requestData = ''
 
+      request.setEncoding('utf8')
       // Listen for data events
       request.on('data', (chunk) => {
         requestData += chunk
@@ -53,10 +56,14 @@ export default class Http implements Server {
 
       // Listen for end event (all data received)
       request.on('end', () => {
-        const parsedData = JSON.parse(requestData)
-        const res = this.handler(parsedData)
+        let message: string
+        try {
+          message = this.handler(JSON.parse(requestData))
+        } catch (e) {
+          message = JSON.stringify(newError('', PARSE_ERROR))
+        }
         response.writeHead(200, { 'Content-Type': 'application/json' })
-        response.end(res)
+        response.end(message)
       })
     })
 
@@ -78,7 +85,8 @@ export default class Http implements Server {
       const res = await this.discovery.register(name, 'http', this.hostname, this.port)
       if (res !== true) {
         setTimeout(() => {
-          this.register(o)
+          // Keep the resolved name so retries register the same service.
+          this.register(o, name)
         }, REGISTER_RETRY_INTERVAL)
       }
     }

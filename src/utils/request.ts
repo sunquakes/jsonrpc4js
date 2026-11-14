@@ -13,24 +13,24 @@ export function json(url: string, method: string, body: string | null): Promise<
       },
       (res) => {
         if (res.statusCode !== 200) {
-          const error = new Error(`Request failed with status code ${res.statusCode}`)
-          req.emit('error', error)
-        } else {
-          let data = ''
-
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-
-          res.on('end', () => {
-            resolve(data)
-          })
+          // Drain the response so the underlying socket can be reused.
+          res.resume()
+          reject(new Error(`Request failed with status code ${res.statusCode}`))
+          return
         }
+        let data = ''
+
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => {
+          data += chunk
+        })
+        res.on('end', () => {
+          resolve(data)
+        })
+        res.on('error', reject)
       }
     )
-    req.on('error', (error: Error) => {
-      reject(error)
-    })
+    req.on('error', reject)
     if (body) {
       req.write(body)
     }
@@ -39,16 +39,25 @@ export function json(url: string, method: string, body: string | null): Promise<
 }
 
 export function get(url: string): Promise<any> {
-  return new Promise((resolve) => {
-    http.get(url, (res) => {
-      let data = ''
+  return new Promise((resolve, reject) => {
+    http
+      .get(url, (res) => {
+        if (res.statusCode !== 200) {
+          res.resume()
+          reject(new Error(`Request failed with status code ${res.statusCode}`))
+          return
+        }
+        let data = ''
 
-      res.on('data', (chunk) => {
-        data += chunk
+        res.setEncoding('utf8')
+        res.on('data', (chunk) => {
+          data += chunk
+        })
+        res.on('end', () => {
+          resolve(data)
+        })
+        res.on('error', reject)
       })
-      res.on('end', () => {
-        resolve(data)
-      })
-    })
+      .on('error', reject)
   })
 }

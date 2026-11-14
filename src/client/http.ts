@@ -4,7 +4,9 @@ import { generateTimestampUUID } from '../utils/random'
 import Response from '../type/response'
 import { newRequest } from '../type/request'
 import { Address, loadBalanceAddress, splitAddresses } from '../utils/address'
-import Driver from 'discovery/driver'
+import Driver from '../discovery/driver'
+
+const CALL_TIMEOUT = 10000
 
 export default class Http implements Client {
   /**
@@ -45,52 +47,65 @@ export default class Http implements Client {
     if (address == null) {
       return Promise.reject(new Error('Without invalid address.'))
     }
-    const req = http.request(
-      {
-        host: address.host,
-        port: address.port,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(postData)
-        }
-      },
-      (res) => {
-        let data = ''
 
-        res.on('data', (chunk) => {
-          data += chunk
-        })
-
-        res.on('end', () => {
-          this.handler(data)
-        })
-      }
-    )
-
-    req.on('error', (e) => {
-      this.activeAddresses = this.activeAddresses.filter(
-        (item) => item.host != address.host || item.port != address.port
-      )
-    })
-
-    // Write data to request body
-    req.write(postData)
-    req.end()
     return new Promise((resolve, reject) => {
+      let timer: NodeJS.Timeout
       this.map.set(id, (data: Response) => {
-        if (data.error != undefined) {
+        clearTimeout(timer)
+        this.map.delete(id)
+        if (data.error !== undefined) {
           reject(new Error(data.error.message))
-        } else if (data.result) {
-          resolve(data.result)
-        } else {
-          reject(new Error('Unknown error'))
+          return
         }
+        resolve(data.result)
       })
-      setTimeout(() => {
+      timer = setTimeout(() => {
         this.map.delete(id)
         reject(new Error('Timeout'))
-      }, 10000)
+      }, CALL_TIMEOUT)
+
+      const req = http.request(
+        {
+          host: address.host,
+          port: address.port,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData)
+          }
+        },
+        (res) => {
+          let data = ''
+
+          res.setEncoding('utf8')
+          res.on('data', (chunk) => {
+            data += chunk
+          })
+
+          res.on('end', () => {
+            this.handler(data)
+          })
+
+          res.on('error', (e) => {
+            clearTimeout(timer)
+            this.map.delete(id)
+            reject(e)
+          })
+        }
+      )
+
+      req.on('error', (e) => {
+        this.activeAddresses = this.activeAddresses.filter(
+          (item) => item.host != address.host || item.port != address.port
+        )
+        clearTimeout(timer)
+        this.map.delete(id)
+        reject(e)
+      })
+
+      // Write data to request body
+      req.write(postData)
+      req.end()
     })
   }
 
@@ -109,7 +124,12 @@ export default class Http implements Client {
   }
 
   handler(res: string) {
-    const data = JSON.parse(res)
+    let data: Response
+    try {
+      data = JSON.parse(res)
+    } catch (e) {
+      return
+    }
     const callback = this.map.get(data.id)
     if (callback !== undefined) callback(data)
   }

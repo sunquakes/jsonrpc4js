@@ -99,6 +99,9 @@ export default class Consul implements Driver {
     const getUrl = this.getUrl(parsedUrl, `/v1/agent/health/service/name/${name}`, token)
     const res: string = await json(getUrl, 'GET', null)
     const list = JSON.parse(res)
+    if (!Array.isArray(list)) {
+      return ''
+    }
     return list
       .filter((item: HealthService) => item.AggregatedStatus === 'passing')
       .map((item: HealthService) => `${item.Service.Address}:${item.Service.Port}`)

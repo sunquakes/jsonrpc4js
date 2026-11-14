@@ -21,7 +21,7 @@ export default class Nacos implements Driver {
 
   constructor(url: string) {
     this.url = url
-    this.heatbeat()
+    this.heartbeat()
   }
 
   async register(name: string, protocol: string, hostname: string, port: number): Promise<boolean> {
@@ -40,7 +40,10 @@ export default class Nacos implements Driver {
 
     const registerUrl = this.getUrl(parsedUrl, '/nacos/v1/ns/instance', params)
     const res = await json(registerUrl, 'POST', null)
-    if (ephemeral === 'true') {
+    const registered = this.heartbeatList.some(
+      (item) => item.ip === hostname && item.port === port
+    )
+    if (ephemeral === 'true' && !registered) {
       this.heartbeatList.push({ ip: hostname, port: port, healthy: true, instanceId: name })
     }
     return res === 'ok'
@@ -76,30 +79,31 @@ export default class Nacos implements Driver {
     return json(beatUrl, 'PUT', null)
   }
 
-  private heatbeat() {
-    for (let i = 0; i < this.heartbeatList.length; i++) {
-      const service = this.heartbeatList[i]
+  private heartbeat() {
+    for (const service of this.heartbeatList) {
       const instanceId = service.instanceId
       const ip = service.ip
       const port = service.port
-      this.beat(instanceId, ip, port).catch((error) => {
-        const key = `${ip}:${port}`
-        const times = this.heartbeatRetry.get(key)
-        if (times === undefined) {
-          this.heartbeatRetry.set(key, 1)
-        } else {
+      const key = `${ip}:${port}`
+      this.beat(instanceId, ip, port)
+        .then(() => {
+          this.heartbeatRetry.delete(key)
+        })
+        .catch(() => {
+          const times = this.heartbeatRetry.get(key) || 0
           if (times >= HEARTBEAT_RETRY_MAX) {
-            this.heartbeatList.splice(i, 1)
+            this.heartbeatList = this.heartbeatList.filter((item) => item !== service)
             this.heartbeatRetry.delete(key)
           } else {
             this.heartbeatRetry.set(key, times + 1)
           }
-        }
-      })
+        })
     }
-    setTimeout(() => {
-      this.heatbeat()
+    const timer = setTimeout(() => {
+      this.heartbeat()
     }, HEARTBEAT_INTERVAL)
+    // Do not keep the process alive only because of the heartbeat loop.
+    timer.unref()
   }
 
   private getUrl(parsedUrl: URL, path: string, params: Map<string, string>): string {
