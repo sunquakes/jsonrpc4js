@@ -1,5 +1,6 @@
 {
   "transform": {
     "\\.[jt]s$": "babel-jest"
-  }
+  },
+  "forceExit": true
 }

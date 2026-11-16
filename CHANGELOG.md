@@ -1,3 +1,18 @@
+## [1.2.1] - 2026-11-16
+- Fixed TCP framing for fragmented and coalesced packets.
+- Fixed client treating falsy results (0, false, '', null) as errors.
+- Fixed HTTP client never rejecting failed requests and leaking call timers.
+- Fixed connection pool to reuse idle connections and round-robin over live
+  addresses only.
+- Fixed malformed JSON crashing the request handler instead of returning a
+  parse error.
+- Fixed Nacos heartbeat duplication and its timer keeping the process alive.
+- Hardened request dispatch: inherited prototype members are refused and
+  errors thrown inside a method return InternalError.
+- Preserved custom service names on registration retries.
+
+---
+
 ## [1.2.0] - 2024-03-04
 - Support define custom service name when register service.
 
