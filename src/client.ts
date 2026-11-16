@@ -1,24 +1,20 @@
 import TcpClient, { Options } from './client/tcp'
 import HttpClient from './client/http'
-import Client from 'client/client'
-import Driver from 'discovery/driver'
+import Client from './client/client'
+import Driver from './discovery/driver'
 
 export default function NewClient(
   service: string,
   protocol: string,
   address: string | Driver,
-  options?: Options 
+  options?: Options
 ): Client {
-  let client
   switch (protocol) {
     case 'tcp':
-      client = new TcpClient(service, address, options)
-      break
+      return new TcpClient(service, address, options)
     case 'http':
-      client = new HttpClient(service, address)
-      break
+      return new HttpClient(service, address)
     default:
-      throw new Error('Unknown error')
+      throw new Error(`Unknown protocol: ${protocol}`)
   }
-  return client
 }

@@ -2,21 +2,28 @@ import * as os from 'os'
 
 export function getLocalIp(): string | null {
   const networkInterfaces = os.networkInterfaces()
-  const ipv4Addresses: Array<string> = []
+  const externalAddresses: Array<string> = []
+  const allAddresses: Array<string> = []
 
   Object.keys(networkInterfaces).forEach((interfaceName) => {
-    if (networkInterfaces === undefined || networkInterfaces[interfaceName] === undefined) {
+    const ifaces = networkInterfaces[interfaceName]
+    if (ifaces === undefined) {
       return
     }
-    const ifaces = networkInterfaces[interfaceName] || []
     ifaces.forEach((iface) => {
       // Filter IPv4 addresses
       if (iface.family === 'IPv4') {
-        ipv4Addresses.push(iface.address)
+        allAddresses.push(iface.address)
+        if (!iface.internal) {
+          externalAddresses.push(iface.address)
+        }
       }
     })
   })
-  return ipv4Addresses.length > 0 ? ipv4Addresses[0] : null
+  if (externalAddresses.length > 0) {
+    return externalAddresses[0]
+  }
+  return allAddresses.length > 0 ? allAddresses[0] : null
 }
 
 export type Address = {
@@ -30,8 +37,11 @@ export function splitAddress(address: string): Address {
 }
 
 export function splitAddresses(address: string): Array<Address> {
-  const addressArray = address.split(',')
-  return addressArray.filter((item) => item != undefined).map((item) => splitAddress(item))
+  return address
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+    .map((item) => splitAddress(item))
 }
 
 export function loadBalanceAddress(addresses: Array<Address>): Address | null {

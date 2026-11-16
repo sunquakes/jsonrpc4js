@@ -81,13 +81,42 @@ __test__/             # jest tests, one per area
 
 ## Testing
 
-- Jest transpiles via `babel-jest` (`.babelrc` with preset-env + preset-typescript);
+- Jest transpiles via `babel-jest` (`babel.config.json` with preset-env + preset-typescript);
   type errors are therefore **not** caught by tests — check types separately with
   `npx tsc --noEmit` when changing types.
 - Tests start real servers on fixed ports (4000+ for TCP, etc.). Use a fresh,
   unused port for each new test and close the server at the end.
 - Discovery tests mock `src/utils/request` with `jest.mock` instead of hitting
   Consul/Nacos. Follow that pattern; never require a live registry in tests.
+
+### Releasing
+
+When the user defines a release version (`x.y.z`), execute these steps in this
+exact order. Do not stop halfway and do not reorder them:
+
+1. **Add the changelog entry.** Update `CHANGELOG.md`: prepend
+   `## [x.y.z] - YYYY-MM-DD` with the release notes, keep the `---` separator
+   used between entries, and set the same version in `package.json` so
+   `package.json` and `CHANGELOG.md` stay in sync.
+
+2. **Commit and push to `develop`.** Commit the release preparation as
+   `chore: release version x.y.z` and push it (`git push origin develop`).
+
+3. **Create and merge the pull request to `main`.** The `gh` CLI is installed and
+   authenticated as `sunquakes`. Because the sandbox forbids writes to the
+   default config directory, set `GH_CONFIG_DIR` to a temporary directory before
+   calling it. Then run
+
+   ```bash
+   gh pr create --base main --head develop --title "chore: release version x.y.z" --body "..."
+   ```
+
+4. **Publish the tag.** After the pull request is merged, tag the merged commit
+   as `x.y.z` and push the tag (`git tag x.y.z && git push origin x.y.z`). This
+   triggers [create-release.yml](file:///workspace/.github/workflows/create-release.yml),
+   which builds the library, creates the GitHub Release, uploads `jsonrpc4js.zip`,
+   and publishes to NPM. The tag must match `*.*.*` and equal the `version` in
+   `package.json`; never re-tag an already published version.
 
 ## Do not
 

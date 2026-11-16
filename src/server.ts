@@ -1,19 +1,20 @@
 import TcpServer, { Options } from './server/tcp'
 import HttpServer from './server/http'
-import Server from 'server/server'
-import Driver from 'discovery/driver'
+import Server from './server/server'
+import Driver from './discovery/driver'
 
-export default function NewServer(protocol: string, port: number, discovery?: Driver, options?: Options): Server {
-  let server
+export default function NewServer(
+  protocol: string,
+  port: number,
+  discovery?: Driver,
+  options?: Options
+): Server {
   switch (protocol) {
     case 'tcp':
-      server = new TcpServer(port, discovery, options)
-      break
+      return new TcpServer(port, discovery, options)
     case 'http':
-      server = new HttpServer(port, discovery)
-      break
+      return new HttpServer(port, discovery)
     default:
-      throw new Error('Unknown error')
+      throw new Error(`Unknown protocol: ${protocol}`)
   }
-  return server
 }

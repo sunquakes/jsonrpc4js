@@ -2,6 +2,8 @@ import * as net from 'net'
 import Server, { REGISTER_RETRY_INTERVAL } from './server'
 import handler from './handler'
 import Request from '../type/request'
+import { newError } from '../type/response'
+import { PARSE_ERROR } from '../type/error'
 import Driver from '../discovery/driver'
 import { getLocalIp } from '../utils/address'
 
@@ -55,23 +57,44 @@ export default class Tcp implements Server {
    * Start the tcp server.
    */
   start(callback?: Function): void {
-    var server = net.createServer((socket) => {
-      socket.on('close', () => {})
+    const server = net.createServer((socket) => {
+      const delimiter = this.options.delimiter
+      let buffer = ''
 
-      socket.on('data', (data) => {
-        const delimiter = this.options.delimiter
-        let json = data.toString()
-        json = json.substring(0, json.length - delimiter.length)
-        const res = handler(JSON.parse(json), this.map)
-        socket.write(res + delimiter)
+      // Decode as utf8 at the stream level so multi-byte characters split
+      // across chunks are handled correctly.
+      socket.setEncoding('utf8')
+      socket.on('data', (data: string) => {
+        buffer += data
+        let index = buffer.indexOf(delimiter)
+        while (index !== -1) {
+          const message = buffer.substring(0, index)
+          buffer = buffer.substring(index + delimiter.length)
+          if (message.length > 0) {
+            socket.write(this.handleMessage(message) + delimiter)
+          }
+          index = buffer.indexOf(delimiter)
+        }
       })
-      socket.on('end', function () {})
     })
 
     server.listen(this.port, () => {
       console.info(`Listening tcp://0.0.0.0:${this.port}`)
       if (callback) callback(server)
     })
+  }
+
+  /**
+   * Parse and dispatch a single request frame.
+   */
+  private handleMessage(message: string): string {
+    let request: Request
+    try {
+      request = JSON.parse(message)
+    } catch (e) {
+      return JSON.stringify(newError('', PARSE_ERROR))
+    }
+    return handler(request, this.map)
   }
 
   /**
@@ -86,7 +109,8 @@ export default class Tcp implements Server {
       const res = await this.discovery.register(name, 'tcp', this.hostname, this.port)
       if (res !== true) {
         setTimeout(() => {
-          this.register(o)
+          // Keep the resolved name so retries register the same service.
+          this.register(o, name)
         }, REGISTER_RETRY_INTERVAL)
       }
     }
