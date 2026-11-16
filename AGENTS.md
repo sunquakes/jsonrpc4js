@@ -137,8 +137,11 @@ them:
    as `x.y.z` and push the tag (`git tag x.y.z && git push origin x.y.z`). This
    triggers [create-release.yml](file:///workspace/.github/workflows/create-release.yml),
    which builds the library, creates the GitHub Release, uploads `jsonrpc4js.zip`,
-   and publishes to NPM. The tag must match `*.*.*` and equal the `version` in
-   `package.json`; never re-tag an already published version.
+   and publishes to NPM via GitHub OIDC trusted publishing (`id-token: write`,
+   no `NPM_TOKEN` secret). The package's trusted publisher on npmjs.com must
+   point at this repository and `create-release.yml`. The tag must match `*.*.*`
+   and equal the `version` in `package.json`; never re-tag an already published
+   version.
 
 ## Do not
 
