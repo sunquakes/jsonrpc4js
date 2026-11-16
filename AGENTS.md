@@ -89,23 +89,34 @@ __test__/             # jest tests, one per area
 - Discovery tests mock `src/utils/request` with `jest.mock` instead of hitting
   Consul/Nacos. Follow that pattern; never require a live registry in tests.
 
-## Release
+### Releasing
 
-Releases are tag-driven: pushing a `x.y.z` tag triggers
-[create-release.yml](file:///workspace/.github/workflows/create-release.yml), which builds the
-library, extracts the first `CHANGELOG.md` section, creates a GitHub Release, uploads
-`jsonrpc4js.zip`, and publishes the package to NPM.
+When the user defines a release version (`x.y.z`), execute these steps in this
+exact order. Do not stop halfway and do not reorder them:
 
-```bash
-# The maintainer bumps `version` and adds the CHANGELOG entry first, then:
-git tag 1.2.0
-git push origin 1.2.0
-```
+1. **Add the changelog entry.** Update `CHANGELOG.md`: prepend
+   `## [x.y.z] - YYYY-MM-DD` with the release notes, keep the `---` separator
+   used between entries, and set the same version in `package.json` so
+   `package.json` and `CHANGELOG.md` stay in sync.
 
-- The tag must match `*.*.*`, otherwise the workflow does not run.
-- The pushed tag is used both as the GitHub Release tag and as the NPM publish version,
-  so it must equal the `version` in `package.json`.
-- Never re-tag an already published version; NPM rejects duplicate versions.
+2. **Commit and push to `develop`.** Commit the release preparation as
+   `chore: release version x.y.z` and push it (`git push origin develop`).
+
+3. **Create and merge the pull request to `main`.** The `gh` CLI is installed and
+   authenticated as `sunquakes`. Because the sandbox forbids writes to the
+   default config directory, set `GH_CONFIG_DIR` to a temporary directory before
+   calling it. Then run
+
+   ```bash
+   gh pr create --base main --head develop --title "chore: release version x.y.z" --body "..."
+   ```
+
+4. **Publish the tag.** After the pull request is merged, tag the merged commit
+   as `x.y.z` and push the tag (`git tag x.y.z && git push origin x.y.z`). This
+   triggers [create-release.yml](file:///workspace/.github/workflows/create-release.yml),
+   which builds the library, creates the GitHub Release, uploads `jsonrpc4js.zip`,
+   and publishes to NPM. The tag must match `*.*.*` and equal the `version` in
+   `package.json`; never re-tag an already published version.
 
 ## Do not
 
