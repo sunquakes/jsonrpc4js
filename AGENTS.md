@@ -89,6 +89,24 @@ __test__/             # jest tests, one per area
 - Discovery tests mock `src/utils/request` with `jest.mock` instead of hitting
   Consul/Nacos. Follow that pattern; never require a live registry in tests.
 
+## Release
+
+Releases are tag-driven: pushing a `x.y.z` tag triggers
+[create-release.yml](file:///workspace/.github/workflows/create-release.yml), which builds the
+library, extracts the first `CHANGELOG.md` section, creates a GitHub Release, uploads
+`jsonrpc4js.zip`, and publishes the package to NPM.
+
+```bash
+# The maintainer bumps `version` and adds the CHANGELOG entry first, then:
+git tag 1.2.0
+git push origin 1.2.0
+```
+
+- The tag must match `*.*.*`, otherwise the workflow does not run.
+- The pushed tag is used both as the GitHub Release tag and as the NPM publish version,
+  so it must equal the `version` in `package.json`.
+- Never re-tag an already published version; NPM rejects duplicate versions.
+
 ## Do not
 
 - Do not commit `dist/` output or edit generated bundles.
