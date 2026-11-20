@@ -8,7 +8,7 @@ Guidance for AI agents working in the `jsonrpc4js` repository.
 TCP or HTTP, with optional service registration & discovery via Consul or Nacos.
 It is published as a dual CJS/ESM bundle (`dist/bundle.cjs`, `dist/bundle.mjs`).
 
-- Node requirement: >= 20.8.0
+- Node requirement: >= 22
 - Package manager: `pnpm`
 - Language: TypeScript (strict mode)
 
