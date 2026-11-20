@@ -1,5 +1,4 @@
-import typescript from 'rollup-plugin-typescript'
-import resolve from 'rollup-plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
 
 export default {
   input: 'src/index.ts',
@@ -13,10 +12,5 @@ export default {
       format: 'esm'
     }
   ],
-  plugins: [
-    resolve({
-      preferBuiltins: true 
-    }),
-    typescript()
-  ]
+  plugins: [typescript()]
 }
