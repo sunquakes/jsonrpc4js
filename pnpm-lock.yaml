@@ -32,9 +32,6 @@ importers:
       rollup:
         specifier: ^4.6.1
         version: 4.63.0
-      rollup-plugin-node-resolve:
-        specifier: ^5.2.0
-        version: 5.2.0(rollup@4.63.0)
       rollup-plugin-typescript:
         specifier: ^1.0.1
         version: 1.0.1(tslib@2.8.1)(typescript@5.2.2)
@@ -947,9 +944,6 @@ packages:
   '@types/node@20.19.43':
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
 
-  '@types/resolve@0.0.8':
-    resolution: {integrity: sha512-auApPaJf3NPfe18hSoJkp8EbZzer2ISk7o8mCC3M9he/a04+gbMF97NkpD2S8riMGvm4BMRI59/SZQSaLTKpsQ==}
-
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
 
@@ -1055,10 +1049,6 @@ packages:
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
-
-  builtin-modules@3.1.0:
-    resolution: {integrity: sha512-k0KL0aWZuBt2lrxrcASWDfwOLMnodeQjodT/1SxEQAXsHANgo6ZC/VEaSEHCXt7aSTZ4/4H5LKa+tBXmW7Vtvw==}
-    engines: {node: '>=6'}
 
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
@@ -1301,9 +1291,6 @@ packages:
   is-generator-fn@2.1.0:
     resolution: {integrity: sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==}
     engines: {node: '>=6'}
-
-  is-module@1.0.0:
-    resolution: {integrity: sha512-51ypPSPCoTEIN9dy5Oy+h4pShgJmPCygKfyRCISBI+JoWT/2oJvK8QPxmwv7b/p239jXrm9M1mlQbyKJ5A152g==}
 
   is-number@7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
@@ -1681,12 +1668,6 @@ packages:
     resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
     engines: {node: '>= 0.4'}
     hasBin: true
-
-  rollup-plugin-node-resolve@5.2.0:
-    resolution: {integrity: sha512-jUlyaDXts7TW2CqQ4GaO5VJ4PwwaV8VUGA7+km3n6k6xtOEacf61u0VXwN80phY/evMcaS+9eIeJ9MOyDxt5Zw==}
-    deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-node-resolve.
-    peerDependencies:
-      rollup: '>=1.11.0'
 
   rollup-plugin-typescript@1.0.1:
     resolution: {integrity: sha512-rwJDNn9jv/NsKZuyBb/h0jsclP4CJ58qbvZt2Q9zDIGILF2LtdtvCqMOL+Gq9IVq5MTrTlHZNrn8h7VjQgd8tw==}
@@ -3009,10 +2990,6 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/resolve@0.0.8':
-    dependencies:
-      '@types/node': 20.19.43
-
   '@types/stack-utils@2.0.3': {}
 
   '@types/yargs-parser@21.0.3': {}
@@ -3153,8 +3130,6 @@ snapshots:
       node-int64: 0.4.0
 
   buffer-from@1.1.2: {}
-
-  builtin-modules@3.1.0: {}
 
   callsites@3.1.0: {}
 
@@ -3358,8 +3333,6 @@ snapshots:
   is-fullwidth-code-point@3.0.0: {}
 
   is-generator-fn@2.1.0: {}
-
-  is-module@1.0.0: {}
 
   is-number@7.0.0: {}
 
@@ -3920,15 +3893,6 @@ snapshots:
       is-core-module: 2.16.2
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
-
-  rollup-plugin-node-resolve@5.2.0(rollup@4.63.0):
-    dependencies:
-      '@types/resolve': 0.0.8
-      builtin-modules: 3.1.0
-      is-module: 1.0.0
-      resolve: 1.22.12
-      rollup: 4.63.0
-      rollup-pluginutils: 2.8.2
 
   rollup-plugin-typescript@1.0.1(tslib@2.8.1)(typescript@5.2.2):
     dependencies:
