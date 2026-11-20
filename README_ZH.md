@@ -8,7 +8,7 @@
   </a>
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%3E=20.8.0-brightgreen.svg?maxAge=2592000" alt="Node">
+  <img src="https://img.shields.io/badge/node-%3E=22-brightgreen.svg?maxAge=2592000" alt="Node">
   <img alt="GitHub" src="https://img.shields.io/github/license/sunquakes/jsonrpc4js?color=blue">
   <img alt="jsonrpc4js" src="https://img.shields.io/github/v/release/sunquakes/jsonrpc4js">
 </p>
