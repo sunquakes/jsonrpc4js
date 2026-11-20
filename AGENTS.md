@@ -62,6 +62,10 @@ __test__/             # jest tests, one per area
 - New discovery backends must implement `Driver` and be re-exported from `index.ts`.
 - Prefer Node built-ins (`net`, `http`, `querystring`, `os`); the package has no
   runtime dependencies — do not add any without a strong reason.
+- Keep the minimum supported Node.js version consistent throughout the project,
+  including `package.json` (`engines.node`), every workflow's `node-version` and
+  test matrix, README badges, and this guide. CI must test every supported Node.js
+  release, and test/release workflows must never use a version below the minimum.
 - Options objects are merged with defaults via `Object.assign(this.options, options)`;
   keep the default (e.g. TCP `delimiter: '\r\n'`) working when options are omitted.
 
