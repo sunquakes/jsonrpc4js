@@ -16,7 +16,14 @@
     "test": "jest",
     "build": "rollup -c"
   },
-  "keywords": ["typescript", "jsonrpc2.0", "nodejs", "microservice", "nacos", "consul"],
+  "keywords": [
+    "typescript",
+    "jsonrpc2.0",
+    "nodejs",
+    "microservice",
+    "nacos",
+    "consul"
+  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "^7.23.3",
@@ -29,7 +36,6 @@
     "rollup": "^4.6.1",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript": "^1.0.1",
-    "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   }
 }
