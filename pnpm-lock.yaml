@@ -17,6 +17,9 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.23.3
         version: 7.29.7(@babel/core@7.29.7)
+      '@rollup/plugin-typescript':
+        specifier: ^12.3.1
+        version: 12.3.1(rollup@4.63.0)(tslib@2.9.1)(typescript@5.2.2)
       '@types/jest':
         specifier: ^29.5.8
         version: 29.5.14
@@ -32,9 +35,9 @@ importers:
       rollup:
         specifier: ^4.6.1
         version: 4.63.0
-      rollup-plugin-typescript:
-        specifier: ^1.0.1
-        version: 1.0.1(tslib@2.8.1)(typescript@5.2.2)
+      tslib:
+        specifier: ^2.9.1
+        version: 2.9.1
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -761,6 +764,28 @@ packages:
     os: [linux]
     libc: [glibc]
 
+  '@rollup/plugin-typescript@12.3.1':
+    resolution: {integrity: sha512-+dT5iMCxLNOCdaCGvGQpLhBpWdnKlPNMU/hvVLKgQgHuBlRFABi1Y6YxXg7ajqnsHRA53Tkdm3Vu1P+qn9HQ7Q==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^2.14.0||^3.0.0||^4.0.0
+      tslib: '*'
+      typescript: '>=3.7.0'
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+      tslib:
+        optional: true
+
+  '@rollup/pluginutils@5.5.1':
+    resolution: {integrity: sha512-P9ZvnfouRu4MSC+ilERaw6FmZs8zqKhpHxEs4aGDGWQAMzQGXnhvCSvoNwokfNvdt7t3Y5Y4p6gStQgezeIqug==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
   '@rollup/rollup-android-arm-eabi@4.63.0':
     resolution: {integrity: sha512-70TeIFezKKy65LgAVyQh+w94/gjWhvPWaLaGGeMEgVrPkQhuj/M5bAYYZzIFUj9Y69oHyTm5Um/R6gcLh4A8JA==}
     cpu: [arm]
@@ -1175,8 +1200,8 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
-  estree-walker@0.6.1:
-    resolution: {integrity: sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==}
+  estree-walker@2.0.2:
+    resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
 
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -1604,6 +1629,10 @@ packages:
     resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
     engines: {node: '>=8.6'}
 
+  picomatch@4.0.7:
+    resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
+    engines: {node: '>=12'}
+
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
@@ -1668,16 +1697,6 @@ packages:
     resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
     engines: {node: '>= 0.4'}
     hasBin: true
-
-  rollup-plugin-typescript@1.0.1:
-    resolution: {integrity: sha512-rwJDNn9jv/NsKZuyBb/h0jsclP4CJ58qbvZt2Q9zDIGILF2LtdtvCqMOL+Gq9IVq5MTrTlHZNrn8h7VjQgd8tw==}
-    deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-typescript.
-    peerDependencies:
-      tslib: '*'
-      typescript: '>=2.1.0'
-
-  rollup-pluginutils@2.8.2:
-    resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
 
   rollup@4.63.0:
     resolution: {integrity: sha512-T5vnZ2y4QqC3/4P+w2+JO+Q/OVdnPsv4XcSYJYMEn0R9/jjl5AgLwO9LAZMzP2lN71O6pypn91rB7lDstUkfrQ==}
@@ -1784,8 +1803,8 @@ packages:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
 
-  tslib@2.8.1:
-    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
 
   type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
@@ -2857,6 +2876,23 @@ snapshots:
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
 
+  '@rollup/plugin-typescript@12.3.1(rollup@4.63.0)(tslib@2.9.1)(typescript@5.2.2)':
+    dependencies:
+      '@rollup/pluginutils': 5.5.1(rollup@4.63.0)
+      resolve: 1.22.12
+      typescript: 5.2.2
+    optionalDependencies:
+      rollup: 4.63.0
+      tslib: 2.9.1
+
+  '@rollup/pluginutils@5.5.1(rollup@4.63.0)':
+    dependencies:
+      '@types/estree': 1.0.9
+      estree-walker: 2.0.2
+      picomatch: 4.0.7
+    optionalDependencies:
+      rollup: 4.63.0
+
   '@rollup/rollup-android-arm-eabi@4.63.0':
     optional: true
 
@@ -3225,7 +3261,7 @@ snapshots:
 
   esprima@4.0.1: {}
 
-  estree-walker@0.6.1: {}
+  estree-walker@2.0.2: {}
 
   esutils@2.0.3: {}
 
@@ -3829,6 +3865,8 @@ snapshots:
 
   picomatch@2.3.2: {}
 
+  picomatch@4.0.7: {}
+
   pirates@4.0.7: {}
 
   pkg-dir@4.2.0:
@@ -3893,17 +3931,6 @@ snapshots:
       is-core-module: 2.16.2
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
-
-  rollup-plugin-typescript@1.0.1(tslib@2.8.1)(typescript@5.2.2):
-    dependencies:
-      resolve: 1.22.12
-      rollup-pluginutils: 2.8.2
-      tslib: 2.8.1
-      typescript: 5.2.2
-
-  rollup-pluginutils@2.8.2:
-    dependencies:
-      estree-walker: 0.6.1
 
   rollup@4.63.0:
     dependencies:
@@ -4017,7 +4044,7 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
-  tslib@2.8.1: {}
+  tslib@2.9.1: {}
 
   type-detect@4.0.8: {}
 
