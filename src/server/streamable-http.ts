@@ -2,6 +2,7 @@ import * as http from 'http'
 import { once } from 'events'
 import Server, { REGISTER_RETRY_INTERVAL } from './server'
 import handler, { resolve, isStreamable } from './handler'
+import Mcp, { Outcome, ServerInfo } from './mcp'
 import Request from '../type/request'
 import { newResult, newError } from '../type/response'
 import { INTERNAL_ERROR, INVALID_REQUEST, PARSE_ERROR } from '../type/error'
@@ -22,6 +23,7 @@ export type Options = {
   keepAliveInterval: number
   replayBufferSize: number
   protocolVersions: Array<string>
+  serverInfo: ServerInfo
 }
 
 /**
@@ -80,13 +82,19 @@ export default class StreamableHttp implements Server {
     path: '/mcp',
     keepAliveInterval: 10000,
     replayBufferSize: 128,
-    protocolVersions: SUPPORTED_PROTOCOL_VERSIONS
+    protocolVersions: SUPPORTED_PROTOCOL_VERSIONS,
+    serverInfo: { name: 'jsonrpc4js', version: '1.2.1' }
   }
 
   /**
    * The live sessions keyed by their Mcp-Session-Id.
    */
   private sessions = new Map<string, Session>()
+
+  /**
+   * The MCP compatibility layer exposing services as tools.
+   */
+  private mcp: Mcp
 
   constructor(port: number, discovery?: Driver, options?: {}) {
     this.port = port
@@ -97,6 +105,7 @@ export default class StreamableHttp implements Server {
     if (options !== undefined) {
       this.options = Object.assign(this.options, options)
     }
+    this.mcp = new Mcp(this.options.serverInfo, this.options.protocolVersions)
   }
 
   /**
@@ -132,6 +141,7 @@ export default class StreamableHttp implements Server {
       name = o.constructor.name
     }
     this.map.set(name, o)
+    this.mcp.addService(name, o)
     if (this.discovery !== undefined && this.hostname != null) {
       const res = await this.discovery.register(
         name,
@@ -162,6 +172,23 @@ export default class StreamableHttp implements Server {
       response.writeHead(404)
       response.end('Not Found')
       return
+    }
+    // DNS-rebinding protection: a browser-supplied Origin must match the
+    // Host the server is reached under.
+    const origin = request.headers['origin']
+    if (typeof origin === 'string' && origin !== '') {
+      let allowed = false
+      try {
+        allowed = new URL(origin).host === request.headers.host
+      } catch (e) {
+        allowed = false
+      }
+      if (!allowed) {
+        request.resume()
+        response.writeHead(403)
+        response.end()
+        return
+      }
     }
     switch (request.method) {
       case 'POST':
@@ -242,27 +269,29 @@ export default class StreamableHttp implements Server {
       return
     }
 
-    const resolved = resolve(message, this.map)
-    if ('error' in resolved) {
-      response.writeHead(200, { 'Content-Type': 'application/json' })
-      response.end(resolved.error)
+    // JSON-RPC notifications carry no id and get an empty 202 Accepted,
+    // as the MCP Streamable HTTP transport prescribes.
+    if (message.id === undefined || message.id === null) {
+      response.writeHead(202)
+      response.end()
       return
     }
 
-    let result: any
-    try {
-      result = await resolved.invoke()
-    } catch (e) {
-      response.writeHead(200, { 'Content-Type': 'application/json' })
-      response.end(JSON.stringify(newError(message.id, INTERNAL_ERROR)))
-      return
+    let outcome: Outcome
+    if (Mcp.handles(message.method)) {
+      outcome = await this.mcp.handle(message)
+    } else {
+      outcome = await this.dispatchLegacy(message)
     }
 
-    // Normalize undefined to null so the result field is always present,
-    // matching the synchronous handler used by the tcp/http transports.
-    if (!isStreamable(result)) {
+    if (outcome.status === 202) {
+      response.writeHead(202)
+      response.end()
+      return
+    }
+    if ('json' in outcome) {
       response.writeHead(200, { 'Content-Type': 'application/json' })
-      response.end(JSON.stringify(newResult(message.id, result === undefined ? null : result)))
+      response.end(outcome.json)
       return
     }
 
@@ -275,18 +304,45 @@ export default class StreamableHttp implements Server {
     // must not surface as unhandled events.
     response.on('error', () => {})
     try {
-      for await (const value of result) {
+      for await (const responseMessage of outcome.stream) {
         if (response.destroyed) return
-        await this.writeFrame(
-          response,
-          session,
-          newResult(message.id, value === undefined ? null : value)
-        )
+        await this.writeFrame(response, session, responseMessage)
       }
     } catch (e) {
       await this.writeFrame(response, session, newError(message.id, INTERNAL_ERROR))
     }
     response.end()
+  }
+
+  /**
+   * Dispatch a "Service/method" request with async-aware semantics: the
+   * result is awaited, and iterable results become a stream of JSON-RPC
+   * result messages instead of a single response.
+   */
+  private async dispatchLegacy(message: Request): Promise<Outcome> {
+    const resolved = resolve(message, this.map)
+    if ('error' in resolved) {
+      return { status: 200, json: resolved.error }
+    }
+    let result: any
+    try {
+      result = await resolved.invoke()
+    } catch (e) {
+      return { status: 200, json: JSON.stringify(newError(message.id, INTERNAL_ERROR)) }
+    }
+    // Normalize undefined to null so the result field is always present,
+    // matching the synchronous handler used by the tcp/http transports.
+    if (!isStreamable(result)) {
+      const body = JSON.stringify(newResult(message.id, result === undefined ? null : result))
+      return { status: 200, json: body }
+    }
+    const id = message.id
+    const stream = (async function* (): AsyncGenerator<object> {
+      for await (const value of result) {
+        yield newResult(id, value === undefined ? null : value)
+      }
+    })()
+    return { status: 200, stream }
   }
 
   private onGet(request: http.IncomingMessage, response: http.ServerResponse) {
