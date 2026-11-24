@@ -50,6 +50,63 @@ const client = NewClient('TcpRpc', 'tcp', `localhost:3200`) // Also support http
 let res = await client.call('add', 1, 2) // 3
 ```
 
+## Streamable HTTP
+
+The `streamable-http` protocol serves JSON-RPC over a single MCP-compatible
+endpoint (`/mcp` by default). Unary calls are answered with
+`application/json`, streaming calls with `text/event-stream` (SSE).
+
+```ts
+const { NewServer, StreamableHttpClient } = require('jsonrpc4js')
+
+class StreamRpc {
+  add(a: number, b: number): number {
+    return a + b
+  }
+
+  // Returning an array, generator or async iterable streams the results.
+  async *range(n: number) {
+    for (let i = 1; i <= n; i++) yield i
+  }
+}
+
+const server = NewServer('streamable-http', 3300)
+server.register(new StreamRpc())
+server.start()
+
+const client = new StreamableHttpClient('StreamRpc', 'localhost:3300')
+await client.call('add', 1, 2) // 3
+for await (const value of client.stream('range', 3)) {
+  console.log(value) // 1, 2, 3
+}
+await client.close() // Terminates the session (DELETE)
+```
+
+`NewClient('StreamRpc', 'streamable-http', address)` works too, but
+`stream()` is only exposed on the concrete `StreamableHttpClient` class.
+
+Options: the server accepts `{ path, keepAliveInterval, replayBufferSize,
+protocolVersions, serverInfo }`, the client `{ path, callTimeout,
+streamIdleTimeout }`.
+
+### MCP compatibility
+
+The streamable HTTP server implements the MCP transport and lifecycle —
+`initialize`, `ping`, notifications answered with `202 Accepted`,
+`Mcp-Session-Id` sessions, `Mcp-Protocol-Version` negotiation,
+`Last-Event-ID` resumability and a GET server→client SSE channel — and
+publishes every registered service method as an MCP tool named
+`Service_method`, so MCP agent clients can connect directly:
+
+```ts
+// tools/list  → [{ name: 'StreamRpc_add', inputSchema: {...} }, ...]
+// tools/call  { name: 'StreamRpc_add', arguments: { a: 1, b: 2 } }
+//             → { content: [{ type: 'text', text: '3' }], isError: false }
+```
+
+Streaming tool results are delivered as `notifications/progress` frames
+when the call carries `_meta.progressToken`, followed by the final result.
+
 ## Service registration & discovery
 
 ### consul

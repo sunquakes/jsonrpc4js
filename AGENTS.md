@@ -30,22 +30,25 @@ pnpm test __test__/tcp.test.ts
 
 ```
 src/
-  index.ts            # public exports (NewServer, NewClient, TcpServer, HttpServer, TcpClient, HttpClient, Consul, Nacos)
+  index.ts            # public exports (NewServer, NewClient, TcpServer, HttpServer, StreamableHttpServer, TcpClient, HttpClient, StreamableHttpClient, Consul, Nacos)
   server.ts           # NewServer(protocol, port, discovery?, options?) factory
   client.ts           # NewClient(service, protocol, address|discovery, options?) factory
   server/
     server.ts         # Server interface + REGISTER_RETRY_INTERVAL
     tcp.ts, http.ts   # protocol implementations
+    streamable-http.ts # MCP-compatible JSON/SSE transport (single /mcp endpoint)
+    mcp.ts            # MCP lifecycle (initialize/ping/tools/*) + tool registry over services
     handler.ts        # request dispatch: "Service/method" -> registered instance method
   client/
     client.ts         # Client interface
     tcp.ts, http.ts   # protocol implementations
+    streamable-http.ts # JSON/SSE client with streaming results and MCP sessions
     pool.ts           # TCP connection pool + round-robin over discovered addresses
   discovery/
     driver.ts         # Driver interface: register(), get()
     consul.ts, nacos.ts
   type/               # request / response / error JSON-RPC types
-  utils/              # address, class (param name reflection), random (id), request (http helpers)
+  utils/              # address, class (param name reflection), random (id), request (http helpers), sse (SSE parser)
 __test__/             # jest tests, one per area
 ```
 
@@ -68,6 +71,11 @@ __test__/             # jest tests, one per area
   release, and test/release workflows must never use a version below the minimum.
 - Options objects are merged with defaults via `Object.assign(this.options, options)`;
   keep the default (e.g. TCP `delimiter: '\r\n'`) working when options are omitted.
+- After modifying or adding any function or feature (public API, protocols,
+  options or behavior), update the documentation in the same change: both
+  `README.md` and `README_ZH.md` must stay in sync — keep them structurally
+  identical, mirroring the English text into Chinese — and keep this guide's
+  Layout and notes accurate for the new code.
 
 ## Behavioral notes
 

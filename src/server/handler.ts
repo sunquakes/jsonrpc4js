@@ -27,11 +27,22 @@ function parameterObject2Array(
   return names.map((name) => params[name])
 }
 
-export default function handler(message: Request, map: Map<string, object>): string {
+/**
+ * The outcome of validating a request against the registered services:
+ * either a ready-to-send JSON-RPC error message or a thunk that invokes
+ * the resolved method (the invocation itself is left to the caller so
+ * async/streaming transports can handle the result before serializing).
+ */
+export type Resolved = { error: string } | { invoke: () => any }
+
+/**
+ * Validate the request and map its params, without invoking the method.
+ */
+export function resolve(message: Request, map: Map<string, object>): Resolved {
   const id = message.id
   const rawMethod = message.method
   if (typeof rawMethod !== 'string') {
-    return JSON.stringify(newError(id, INVALID_REQUEST))
+    return { error: JSON.stringify(newError(id, INVALID_REQUEST)) }
   }
   const method = rawMethod.startsWith('/') ? rawMethod.substring(1) : rawMethod
   const methodArray = method.split('/')
@@ -39,12 +50,12 @@ export default function handler(message: Request, map: Map<string, object>): str
   const methodName = methodArray[1]
   const service: object | undefined = map.get(serviceName)
   if (service === undefined) {
-    return JSON.stringify(newError(id, METHOD_NOT_FOUND))
+    return { error: JSON.stringify(newError(id, METHOD_NOT_FOUND)) }
   }
   const methodFn: Function = (service as any)[methodName]
   // Only allow methods defined by the service itself, never inherited Object members.
   if (typeof methodFn !== 'function' || methodName in Object.prototype) {
-    return JSON.stringify(newError(id, METHOD_NOT_FOUND))
+    return { error: JSON.stringify(newError(id, METHOD_NOT_FOUND)) }
   }
 
   let params: Array<any>
@@ -54,15 +65,37 @@ export default function handler(message: Request, map: Map<string, object>): str
         ? message.params || []
         : parameterObject2Array(serviceName, methodName, message.params, methodFn)
   } catch (e) {
-    return JSON.stringify(newError(id, INVALID_PARAMS))
+    return { error: JSON.stringify(newError(id, INVALID_PARAMS)) }
   }
 
+  return { invoke: () => methodFn.apply(service, params) }
+}
+
+/**
+ * Whether an invocation result should be delivered as a stream of JSON-RPC
+ * messages (Array, generator, async generator or async iterable) instead of
+ * a single response. Strings and plain values are never streamable.
+ */
+export function isStreamable(value: any): boolean {
+  return (
+    value != null &&
+    typeof value !== 'string' &&
+    (typeof value[Symbol.asyncIterator] === 'function' ||
+      typeof value[Symbol.iterator] === 'function')
+  )
+}
+
+export default function handler(message: Request, map: Map<string, object>): string {
+  const resolved = resolve(message, map)
+  if ('error' in resolved) {
+    return resolved.error
+  }
   try {
-    const res = methodFn.apply(service, params)
+    const res = resolved.invoke()
     // JSON.stringify drops `undefined` results, which makes them indistinguishable
     // from a missing response. Normalize them to null as JSON-RPC allows.
-    return JSON.stringify(newResult(id, res === undefined ? null : res))
+    return JSON.stringify(newResult(message.id, res === undefined ? null : res))
   } catch (e) {
-    return JSON.stringify(newError(id, INTERNAL_ERROR))
+    return JSON.stringify(newError(message.id, INTERNAL_ERROR))
   }
 }
