@@ -50,6 +50,59 @@ const client = NewClient('TcpRpc', 'tcp', `localhost:3200`) // 也支持http协�
 let res = await client.call('add', 1, 2) // 3
 ```
 
+## Streamable HTTP
+
+`streamable-http` 协议在单一 MCP 兼容端点（默认 `/mcp`）上提供 JSON-RPC 服务。
+普通调用返回 `application/json`，流式调用返回 `text/event-stream`（SSE）。
+
+```ts
+const { NewServer, StreamableHttpClient } = require('jsonrpc4js')
+
+class StreamRpc {
+  add(a: number, b: number): number {
+    return a + b
+  }
+
+  // 返回数组、生成器或异步可迭代对象即可流式输出结果
+  async *range(n: number) {
+    for (let i = 1; i <= n; i++) yield i
+  }
+}
+
+const server = NewServer('streamable-http', 3300)
+server.register(new StreamRpc())
+server.start()
+
+const client = new StreamableHttpClient('StreamRpc', 'localhost:3300')
+await client.call('add', 1, 2) // 3
+for await (const value of client.stream('range', 3)) {
+  console.log(value) // 1, 2, 3
+}
+await client.close() // 终止会话（DELETE）
+```
+
+也可以用 `NewClient('StreamRpc', 'streamable-http', address)` 创建客户端，
+但 `stream()` 仅在具体类 `StreamableHttpClient` 上提供。
+
+选项：服务端 `{ path, keepAliveInterval, replayBufferSize, protocolVersions,
+serverInfo }`，客户端 `{ path, callTimeout, streamIdleTimeout }`。
+
+### MCP 兼容
+
+streamable HTTP 服务端实现了 MCP 的传输与生命周期——`initialize`、`ping`、
+通知返回 `202 Accepted`、`Mcp-Session-Id` 会话、`Mcp-Protocol-Version` 协商、
+`Last-Event-ID` 断线续传以及 GET 服务端→客户端 SSE 通道——并把每个已注册的
+服务方法以 `Service_method` 名称发布为 MCP 工具，agent 客户端可直接连接：
+
+```ts
+// tools/list  → [{ name: 'StreamRpc_add', inputSchema: {...} }, ...]
+// tools/call  { name: 'StreamRpc_add', arguments: { a: 1, b: 2 } }
+//             → { content: [{ type: 'text', text: '3' }], isError: false }
+```
+
+当调用携带 `_meta.progressToken` 时，流式工具结果会以 `notifications/progress`
+帧逐条推送，最后返回最终结果。
+
 ## 服务注册发现
 
 ### consul
