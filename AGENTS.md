@@ -155,6 +155,13 @@ them:
    and equal the `version` in `package.json`; never re-tag an already published
    version.
 
+## Pull requests
+
+- After a pull request is merged, delete its temporary working branch (the
+  `trae/agent-*` branch) — both locally and on the remote
+  (`git push origin --delete <branch>`). Never leave merged temporary branches
+  behind.
+
 ## Do not
 
 - Do not commit `dist/` output or edit generated bundles.
